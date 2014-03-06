@@ -7,17 +7,7 @@
 
 #include "ch.h"
 #include "kl_lib_f40x.h"
-
-static WORKING_AREA(waMyThread, 256);
-static void MyThread(void *arg) {
-    chRegSetThreadName("My");
-    while(true) {
-        PinSet(GPIOC, 7);
-        chThdSleepMilliseconds(504);
-        PinClear(GPIOC, 7);
-        chThdSleepMilliseconds(504);
-    }
-}
+#include "adc_ads8320.h"
 
 int main(void) {
     Clk.UpdateFreqValues();
@@ -35,7 +25,7 @@ int main(void) {
 
     PinSetupOut(GPIOC, 7, omPushPull, pudNone);
 
-    //chThdCreateStatic(waMyThread, sizeof(waMyThread), NORMALPRIO, (tfunc_t)MyThread, NULL);
+    Adc.Init();
 
     while(true) {
         chThdSleepMilliseconds(999);
