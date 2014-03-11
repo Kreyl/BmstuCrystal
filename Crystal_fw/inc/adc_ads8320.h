@@ -12,9 +12,9 @@
 
 #define ADC_SPI     SPI1
 #define ADC_GPIO    GPIOA
-#define ADC_CLK     4
+#define ADC_CLK     5
 #define ADC_MISO    6
-#define ADC_CSK     5
+#define ADC_CSK     4
 
 class Adc_t {
 private:
@@ -23,6 +23,7 @@ private:
     void CskLo() { PinClear(ADC_GPIO, ADC_CSK); }
 public:
     void Init();
+    uint16_t Measure();
 };
 
 extern Adc_t Adc;

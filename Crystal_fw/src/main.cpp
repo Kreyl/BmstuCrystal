@@ -8,12 +8,16 @@
 #include "ch.h"
 #include "kl_lib_f40x.h"
 #include "adc_ads8320.h"
+#include "cmd_uart.h"
 
 int main(void) {
     Clk.UpdateFreqValues();
     // Init OS
     halInit();
     chSysInit();
+
+    Uart.Init(115200);
+    Uart.Printf("Crystal AHB=%u\r", Clk.AHBFreqHz);
 
     PinSetupAlterFunc(GPIOC, 6, omPushPull, pudNone, AF2);
     rccEnableTIM3(FALSE);
@@ -29,6 +33,8 @@ int main(void) {
 
     while(true) {
         chThdSleepMilliseconds(999);
+        uint16_t a = Adc.Measure();
+        Uart.Printf("ADC=%u\r", a);
     }
 }
 

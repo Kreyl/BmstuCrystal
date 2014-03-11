@@ -15,8 +15,22 @@ void Adc_t::Init() {
     PinSetupAlterFunc(ADC_GPIO, ADC_MISO, omPushPull, pudNone, AF5);
     CskHi();
     // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=f/2
-    ISpi.Setup(ADC_SPI, boMSB, cpolIdleLow, cphaFirstEdge, sbFdiv2);
+    ISpi.Setup(ADC_SPI, boMSB, cpolIdleLow, cphaFirstEdge, sbFdiv8);
     ISpi.Enable();
 }
 
-
+uint16_t Adc_t::Measure() {
+    CskLo();
+    uint8_t b;
+    uint32_t r = 0;
+    b = ISpi.ReadWriteByte(0);
+    r = b;
+    b = ISpi.ReadWriteByte(0);
+    r = (r << 8) | b;
+    b = ISpi.ReadWriteByte(0);
+    r = (r << 8) | b;
+    CskHi();
+    r >>= 2;
+    r &= 0xFFFF;
+    return r;
+}

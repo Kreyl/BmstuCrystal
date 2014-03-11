@@ -41,6 +41,8 @@
 
 #include "hal_lld.h"
 
+#define STM32_DMA_REQUIRED  TRUE    // @KL
+
 /* Abstract interfaces.*/
 //#include "io_channel.h"
 //#include "io_block.h"
