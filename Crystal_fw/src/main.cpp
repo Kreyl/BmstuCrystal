@@ -8,6 +8,7 @@
 #include "ch.h"
 #include "kl_lib_f40x.h"
 #include "adc_ads8320.h"
+#include "dac8531.h"
 #include "cmd_uart.h"
 
 int main(void) {
@@ -30,11 +31,15 @@ int main(void) {
     PinSetupOut(GPIOC, 7, omPushPull, pudNone);
 
     Adc.Init();
+    Dac.Init();
 
     while(true) {
         chThdSleepMilliseconds(999);
         uint16_t a = Adc.Measure();
         Uart.Printf("ADC=%u\r", a);
+
+        Dac.Measure();
+        //Uart.Printf("DAC=%u\r", z);
     }
 }
 
