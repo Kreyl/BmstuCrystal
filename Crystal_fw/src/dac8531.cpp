@@ -16,14 +16,14 @@ void Dac_t::Init() {
     CskHi();
 
     // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=f/2
-    ISpi.Setup(DAC_SPI, boMSB, cpolIdleLow, cphaFirstEdge, sbFdiv8);
+    ISpi.Setup(DAC_SPI, boMSB, cpolIdleLow, cphaSecondEdge, sbFdiv2);
     ISpi.Enable();
 }
 
-uint16_t Dac_t::Measure() {
+void Dac_t::Set(uint16_t AData) {
     CskLo();
-    uint8_t b;
-    uint32_t r = 0;
-    b = ISpi.ReadWriteByte(30);
+    ISpi.ReadWriteByte(0);
+    ISpi.ReadWriteByte((AData>>8) & 0xFF);
+    ISpi.ReadWriteByte(AData & 0xFF);
     CskHi();
 }

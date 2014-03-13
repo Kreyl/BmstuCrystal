@@ -33,12 +33,15 @@ int main(void) {
     Adc.Init();
     Dac.Init();
 
-    while(true) {
-        chThdSleepMilliseconds(999);
-        uint16_t a = Adc.Measure();
-        Uart.Printf("ADC=%u\r", a);
+    uint16_t i=0;
 
-        Dac.Measure();
+    while(true) {
+        chThdSleepMilliseconds(1);
+//        uint16_t a = Adc.Measure();
+//        Uart.Printf("ADC=%u\r", a);
+//
+        Dac.Set(i);
+        i+=1000;
         //Uart.Printf("DAC=%u\r", z);
     }
 }

@@ -13,7 +13,7 @@
 #define DAC_SPI     SPI2
 #define DAC_GPIO    GPIOB
 #define DAC_MOSI    15
-#define DAC_CSK     14
+#define DAC_CSK     12
 #define DAC_CLK     13
 
 class Dac_t {
@@ -23,7 +23,7 @@ private:
     void CskLo() { PinClear(DAC_GPIO, DAC_CSK); }
 public:
     void Init();
-    uint16_t Measure();
+    void Set(uint16_t AData);
 };
 
 extern Dac_t Dac;
