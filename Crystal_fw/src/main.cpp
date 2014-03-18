@@ -11,6 +11,11 @@
 #include "dac8531.h"
 #include "cmd_uart.h"
 
+void adc_dac(){
+    uint16_t z = Adc.Measure();
+    Dac.Set(z);
+}
+
 int main(void) {
     Clk.UpdateFreqValues();
     // Init OS
@@ -33,16 +38,15 @@ int main(void) {
     Adc.Init();
     Dac.Init();
 
-    uint16_t i=0;
-
     while(true) {
         chThdSleepMilliseconds(1);
 //        uint16_t a = Adc.Measure();
 //        Uart.Printf("ADC=%u\r", a);
-//
-        Dac.Set(i);
-        i+=1000;
-        //Uart.Printf("DAC=%u\r", z);
+
+//        Dac.Set(i);
+//        i+=1000;
+//        Uart.Printf("DAC=%u\r", z);
+          adc_dac();
     }
 }
 
