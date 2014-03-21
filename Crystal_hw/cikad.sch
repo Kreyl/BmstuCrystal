@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 01/08/2013 09:59:30
+EESchema Schematic File Version 2
 LIBS:adc_kl
 LIBS:Connectors_kl
 LIBS:dac
@@ -8,7 +8,6 @@ LIBS:Power_kl
 LIBS:st_kl
 LIBS:Tittar_kl
 LIBS:power
-LIBS:cikad-cache
 EELAYER 27 0
 EELAYER END
 $Descr A3 16535 11693
