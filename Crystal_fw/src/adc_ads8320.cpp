@@ -6,8 +6,15 @@
  */
 
 #include "adc_ads8320.h"
+#include "cmd_uart.h"
+#include "core_cmInstr.h"
 
 Adc_t Adc;
+
+extern "C" {
+// DMA irq
+void SIrqDmaHandler(void *p, uint32_t flags) { Adc.IrqDmaHandler(); }
+} // extern c
 
 void Adc_t::Init() {
     PinSetupOut(ADC_GPIO, ADC_CSK, omPushPull, pudNone);
@@ -16,7 +23,14 @@ void Adc_t::Init() {
     CskHi();
     // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=f/2
     ISpi.Setup(ADC_SPI, boMSB, cpolIdleLow, cphaFirstEdge, sbFdiv8);
-    ISpi.Enable();
+//    ISpi.Enable();
+    ISpi.SetModeRxOnly();
+    ISpi.EnableRxDma();
+
+    // ==== DMA ====
+    dmaStreamAllocate     (ADC_DMA, IRQ_PRIO_MEDIUM, SIrqDmaHandler, NULL);
+    dmaStreamSetPeripheral(ADC_DMA, &ADC_SPI->DR);
+    dmaStreamSetMode      (ADC_DMA, ADC_DMA_MODE);
 }
 
 uint16_t Adc_t::Measure() {
@@ -33,4 +47,24 @@ uint16_t Adc_t::Measure() {
     r >>= 2;
     r &= 0xFFFF;
     return r;
+}
+
+void Adc_t::StartDMAMeasure() {
+    (void)ADC_SPI->DR;
+    dmaStreamSetMemory0(ADC_DMA, &Rslt);
+    dmaStreamSetTransactionSize(ADC_DMA, 3);
+    dmaStreamSetMode(ADC_DMA, ADC_DMA_MODE);
+    dmaStreamEnable(ADC_DMA);
+    CskLo();
+    ISpi.Enable();
+}
+
+void Adc_t::IrqDmaHandler() {
+    ISpi.Disable();
+    CskHi();
+    dmaStreamDisable(ADC_DMA);
+    Rslt = __REV(Rslt);
+    Rslt >>= 10;
+    Rslt &= 0xFFFF;
+    Uart.Printf("%u\r", Rslt);
 }

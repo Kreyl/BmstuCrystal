@@ -11,14 +11,20 @@
 #include "dac8531.h"
 #include "cmd_uart.h"
 
+/*
+ * DMA:
+ * - DMA2 Ch3 Stream0: SPI1 RX, ADC
+ */
+
+
 extern "C" {
-  void TIM2_IRQHandler(void){
-    if(TIM2->SR & TIM_SR_UIF){
+void TIM2_IRQHandler(void) {
+    if(TIM2->SR & TIM_SR_UIF) {
         TIM2->SR &= ~TIM_SR_UIF;
     }
     PinToggle(GPIOC, 7);
     PinToggle(GPIOC, 8);
-  }
+}
 }
 
 
@@ -29,10 +35,10 @@ void adc_dac(){
 
 int main(void) {
 
-    RCC->CR |= RCC_CR_HSEON;
-    while(!(RCC->CR & RCC_CR_HSERDY)) {};
-    RCC->CFGR &=~ RCC_CFGR_SW;
-    RCC->CFGR |= RCC_CFGR_SW_HSE;
+//    RCC->CR |= RCC_CR_HSEON;
+//    while(!(RCC->CR & RCC_CR_HSERDY)) {};
+//    RCC->CFGR &=~ RCC_CFGR_SW;
+//    RCC->CFGR |= RCC_CFGR_SW_HSE;
 
     Clk.UpdateFreqValues();
     // Init OS
@@ -70,17 +76,17 @@ int main(void) {
 
 
     while(true) {
-        chThdSleepMilliseconds(10);
-
-    for(int i = 0; i<100; i++){
-        TIM3->CCR1 = i;
-        chThdSleepMilliseconds(25);
-    }
-
-    for(int i = 100; i>0; i--){
-          TIM3->CCR1 = i;
-          chThdSleepMilliseconds(25);
-    }
+        chThdSleepMilliseconds(450);
+        Adc.StartDMAMeasure();
+//        for(int i = 0; i<100; i++) {
+//            TIM3->CCR1 = i;
+//            chThdSleepMilliseconds(25);
+//        }
+//
+//        for(int i = 100; i>0; i--) {
+//              TIM3->CCR1 = i;
+//              chThdSleepMilliseconds(25);
+//        }
 //        uint16_t a = Adc.Measure();
 //        Uart.Printf("ADC=%u\r", a);
 

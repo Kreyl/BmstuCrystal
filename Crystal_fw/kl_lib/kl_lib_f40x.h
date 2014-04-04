@@ -397,6 +397,11 @@ public:
     void EnableIrqTxE()   { PSpi->CR2 |=  SPI_CR2_TXEIE;  }
     void DisableIrqRxNE() { PSpi->CR2 &= ~SPI_CR2_RXNEIE; }
     void DisableIrqTxE()  { PSpi->CR2 &= ~SPI_CR2_TXEIE;  }
+    // Modes of operation
+    void SetModeRxOnly() {  // BIDIMODE=0 and RXONLY=1
+        PSpi->CR1 &= ~SPI_CR1_BIDIMODE;
+        PSpi->CR1 |= SPI_CR1_RXONLY;
+    }
     // DMA
     void EnableTxDma() { PSpi->CR2 |= SPI_CR2_TXDMAEN; }
     void EnableRxDma() { PSpi->CR2 |= SPI_CR2_RXDMAEN; }
