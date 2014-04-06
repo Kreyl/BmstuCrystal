@@ -1,4 +1,4 @@
-update=21/03/2014 21:34:33
+update=06.04.2014 23:54:43
 last_client=eeschema
 [cvpcb]
 version=1
@@ -49,3 +49,5 @@ LibName6=Power_kl
 LibName7=st_kl
 LibName8=Tittar_kl
 LibName9=power
+LibName10=cikad-cache
+LibName11=C:/OstrannaStudio/Workspace/BMSTU1/Crystal_hw/sma_l
