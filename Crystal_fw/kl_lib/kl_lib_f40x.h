@@ -402,6 +402,11 @@ public:
         PSpi->CR1 &= ~SPI_CR1_BIDIMODE;
         PSpi->CR1 |= SPI_CR1_RXONLY;
     }
+    //R
+    void SetModeTxOnly(){  // BIDIMODE=0 and RXONLY=1
+        PSpi->CR1 &= ~SPI_CR1_BIDIMODE;
+        PSpi->CR1 |= SPI_CR1_RXONLY;
+    }
     // DMA
     void EnableTxDma() { PSpi->CR2 |= SPI_CR2_TXDMAEN; }
     void EnableRxDma() { PSpi->CR2 |= SPI_CR2_RXDMAEN; }

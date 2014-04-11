@@ -14,6 +14,7 @@
 /*
  * DMA:
  * - DMA2 Ch3 Stream0: SPI1 RX, ADC
+ * - DMA2 Ch3 Stream3: SPI1 TX, DAC
  */
 
 
