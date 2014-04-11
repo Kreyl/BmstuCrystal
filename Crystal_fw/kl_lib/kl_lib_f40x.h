@@ -303,10 +303,9 @@ private:
     TIM_TypeDef* ITmr;
     uint32_t *PClk;
 public:
-    Timer_t(TIM_TypeDef* Tmr): ITmr(Tmr), PClk(NULL), PCCR(NULL) {}
     __IO uint32_t *PCCR;    // Made public to allow DMA
     // Common
-    void Init();
+    void Init(TIM_TypeDef* Tmr);
     void Deinit();
     inline void Enable()  { ITmr->CR1 |=  TIM_CR1_CEN; }
     inline void Disable() { ITmr->CR1 &= ~TIM_CR1_CEN; }
@@ -314,6 +313,7 @@ public:
     inline void SetTopValue(uint16_t Value) { ITmr->ARR = Value; }
     inline uint16_t GetTopValue() { return ITmr->ARR; }
     inline void SetupPrescaler(uint32_t PrescaledFreqHz) { ITmr->PSC = (*PClk / PrescaledFreqHz) - 1; }
+    inline void SetPrescaler(uint16_t AValue) { ITmr->PSC = AValue; }
     inline void SetCounter(uint16_t Value) { ITmr->CNT = Value; }
     inline uint16_t GetCounter() { return ITmr->CNT; }
     // Master/Slave
@@ -338,6 +338,8 @@ public:
     // DMA, Irq, Evt
     inline void DmaOnTriggerEnable() { ITmr->DIER |= TIM_DIER_TDE; }
     inline void GenerateUpdateEvt()  { ITmr->EGR = TIM_EGR_UG; }
+    void EnableIrqOnUpdate() { ITmr->DIER |= TIM_DIER_UIE; }
+    void EnableIrq(uint32_t IrqChnl, uint32_t IrqPriority) { nvicEnableVector(IrqChnl, CORTEX_PRIORITY_MASK(IrqPriority)); }
     // PWM
     void PwmInit(GPIO_TypeDef *GPIO, uint16_t N, uint8_t Chnl, Inverted_t Inverted);
     void PwmSet(uint16_t Value) { *PCCR = Value; }

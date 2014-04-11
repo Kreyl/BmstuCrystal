@@ -10,7 +10,8 @@
 #include <string.h>
 
 // ================================ Timer ======================================
-void Timer_t::Init() {
+void Timer_t::Init(TIM_TypeDef* Tmr) {
+    ITmr = Tmr;
     if     (ITmr == TIM1)  { rccEnableTIM1(FALSE); }
     else if(ITmr == TIM2)  { rccEnableTIM2(FALSE); }
     else if(ITmr == TIM3)  { rccEnableTIM3(FALSE); }

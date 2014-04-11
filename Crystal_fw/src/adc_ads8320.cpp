@@ -8,6 +8,7 @@
 #include "adc_ads8320.h"
 #include "cmd_uart.h"
 #include "core_cmInstr.h"
+#include "application.h"
 
 Adc_t Adc;
 
@@ -66,5 +67,6 @@ void Adc_t::IrqDmaHandler() {
     Rslt = __REV(Rslt);
     Rslt >>= 10;
     Rslt &= 0xFFFF;
-    Uart.Printf("%u\r", Rslt);
+//    Uart.Printf("%u\r", Rslt);
+    App.SignalAdcRsltReady();
 }
