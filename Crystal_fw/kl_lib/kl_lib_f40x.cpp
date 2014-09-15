@@ -7,6 +7,7 @@
 
 #include "kl_lib_f40x.h"
 #include <stdarg.h>
+#include "cmd_uart.h"
 #include <string.h>
 
 // ================================ Timer ======================================
@@ -189,13 +190,14 @@ void PwmPin_t::SetFreqHz(uint32_t FreqHz) {
     Tim->PSC = (uint16_t)FPrescaler;
 }
 
-// ================================= DEBUG =====================================
-//void chDbgPanic(const char *msg1) {
-//    Uart.PrintNow(msg1);
-//    Uart.PrintNow(" @");
-//    Uart.PrintNow(chThdSelf()->p_name);
-//    Uart.PrintNow("\r");
-//}
+#if 1 // ============================== DEBUG ==================================
+void chDbgPanic(const char *msg1) {
+    Uart.PrintNow("\r");
+    Uart.PrintNow(msg1);
+    Uart.PrintNow(" @");
+    Uart.PrintNow(chThdSelf()->p_name);
+}
+#endif
 
 // ================================= Random ====================================
 uint32_t Random(uint32_t TopValue) {

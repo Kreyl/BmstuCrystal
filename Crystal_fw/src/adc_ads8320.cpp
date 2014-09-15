@@ -8,7 +8,7 @@
 #include "adc_ads8320.h"
 #include "cmd_uart.h"
 #include "core_cmInstr.h"
-#include "application.h"
+#include "main.h"
 
 Adc_t Adc;
 
@@ -22,9 +22,8 @@ void Adc_t::Init() {
     PinSetupAlterFunc(ADC_GPIO, ADC_CLK, omPushPull, pudNone, AF5);
     PinSetupAlterFunc(ADC_GPIO, ADC_MISO, omPushPull, pudNone, AF5);
     CskHi();
-    // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=f/2
+    // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=...
     ISpi.Setup(ADC_SPI, boMSB, cpolIdleLow, cphaFirstEdge, sbFdiv8);
-//    ISpi.Enable();
     ISpi.SetModeRxOnly();
     ISpi.EnableRxDma();
 
@@ -51,7 +50,7 @@ uint16_t Adc_t::Measure() {
 }
 
 void Adc_t::StartDMAMeasure() {
-    (void)ADC_SPI->DR;
+    (void)ADC_SPI->DR;  // Clear input register
     dmaStreamSetMemory0(ADC_DMA, &Rslt);
     dmaStreamSetTransactionSize(ADC_DMA, 3);
     dmaStreamSetMode(ADC_DMA, ADC_DMA_MODE);
@@ -61,6 +60,7 @@ void Adc_t::StartDMAMeasure() {
 }
 
 void Adc_t::IrqDmaHandler() {
+    chSysLockFromIsr();
     ISpi.Disable();
     CskHi();
     dmaStreamDisable(ADC_DMA);
@@ -69,4 +69,5 @@ void Adc_t::IrqDmaHandler() {
     Rslt &= 0xFFFF;
 //    Uart.Printf("%u\r", Rslt);
     App.SignalAdcRsltReady();
+    chSysUnlockFromIsr();
 }

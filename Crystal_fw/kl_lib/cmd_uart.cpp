@@ -10,6 +10,17 @@
 
 CmdUart_t Uart;
 
+extern "C" {
+void PrintfC(const char *format, ...) {
+    chSysLock();
+    va_list args;
+    va_start(args, format);
+    Uart.IPrintf(format, args);
+    va_end(args);
+    chSysUnlock();
+}
+}
+
 static inline void FPutChar(char c) { Uart.IPutChar(c); }
 
 void CmdUart_t::IPutChar(char c) {
@@ -18,18 +29,27 @@ void CmdUart_t::IPutChar(char c) {
 }
 
 void CmdUart_t::Printf(const char *format, ...) {
-    uint32_t MaxLength = (PWrite < PRead)? (PRead - PWrite) : ((UART_TXBUF_SIZE + PRead) - PWrite);
+    chSysLock();
     va_list args;
     va_start(args, format);
-    IFullSlotsCount += kl_vsprintf(FPutChar, MaxLength, format, args);
+    IPrintf(format, args);
     va_end(args);
+    chSysUnlock();
+}
 
+void CmdUart_t::IPrintf(const char *format, va_list args) {
+    int32_t MaxLength = UART_TXBUF_SIZE - IFullSlotsCount;
+    IFullSlotsCount += kl_vsprintf(FPutChar, MaxLength, format, args);
     // Start transmission if Idle
-    if(IDmaIsIdle) {
+    if(IDmaIsIdle) ISendViaDMA();
+}
+
+void CmdUart_t::ISendViaDMA() {
+    uint32_t PartSz = (TXBuf + UART_TXBUF_SIZE) - PRead; // Cnt from PRead to end of buf
+    ITransSize = MIN(IFullSlotsCount, PartSz);
+    if(ITransSize != 0) {
         IDmaIsIdle = false;
         dmaStreamSetMemory0(UART_DMA_TX, PRead);
-        uint32_t PartSz = (TXBuf + UART_TXBUF_SIZE) - PRead;    // Char count from PRead to buffer end
-        ITransSize = (IFullSlotsCount > PartSz)? PartSz : IFullSlotsCount;  // How many to transmit now
         dmaStreamSetTransactionSize(UART_DMA_TX, ITransSize);
         dmaStreamSetMode(UART_DMA_TX, UART_DMA_TX_MODE);
         dmaStreamEnable(UART_DMA_TX);
@@ -37,85 +57,31 @@ void CmdUart_t::Printf(const char *format, ...) {
 }
 
 #if UART_RX_ENABLED
-static inline bool TryConvertToDigit(uint8_t b, uint8_t *p) {
-    if((b >= '0') and (b <= '9')) {
-        *p = b - '0';
-        return true;
-    }
-    else if((b >= 'A') and (b <= 'F')) {
-        *p = 0x0A + b - 'A';
-        return true;
-    }
-    else return false;
-}
-static inline bool IsDelimiter(uint8_t b) { return (b == ','); }
-static inline bool IsEnd(uint8_t b) { return (b == '\r') or (b == '\n'); }
-
-static WORKING_AREA(waUartRxThread, 256);
-__attribute__ ((__noreturn__))
-static void UartRxThread(void *arg) {
-    chRegSetThreadName("UartRx");
-    while(true) Uart.IRxTask();
-}
-
-void CmdUart_t::IRxTask() {
-    chThdSleepMilliseconds(UART_RX_POLLING_MS);
-    int32_t Sz = UART_RXBUF_SZ - UART_DMA_RX->channel->CNDTR;   // Number of bytes copied to buffer since restart
+void CmdUart_t::PollRx() {
+    int32_t Sz = UART_RXBUF_SZ - UART_DMA_RX->stream->NDTR;   // Number of bytes copied to buffer since restart
     if(Sz != SzOld) {
         int32_t ByteCnt = Sz - SzOld;
         if(ByteCnt < 0) ByteCnt += UART_RXBUF_SZ;   // Handle buffer circulation
         SzOld = Sz;
         for(int32_t i=0; i<ByteCnt; i++) {          // Iterate received bytes
-            IProcessByte(IRxBuf[RIndx++]);
+            char c = IRxBuf[RIndx++];
+            if(c == '\b') PCmdWrite->Backspace();
+            else if((c == '\r') or (c == '\n')) CompleteCmd();
+            else PCmdWrite->PutChar(c);
             if(RIndx >= UART_RXBUF_SZ) RIndx = 0;
         }
     }
 }
 
-void CmdUart_t::IProcessByte(uint8_t b) {
-    uint8_t d=0;
-    if(b == '#') RxState = rsCmdCode1; // If # is received anywhere, start again
-    else switch(RxState) {
-        case rsCmdCode1:
-            if(TryConvertToDigit(b, &d)) {
-                CmdCode = d << 4;
-                RxState = rsCmdCode2;
-            }
-            else IResetCmd();
-            break;
-
-        case rsCmdCode2:
-            if(TryConvertToDigit(b, &d)) {
-                CmdCode |= d;
-                RxState = rsData1;
-            }
-            else IResetCmd();
-            break;
-
-        case rsData1:
-            if(TryConvertToDigit(b, &d)) {
-                *PCmdWrite = d << 4;
-                RxState = rsData2;
-            }
-            else if(IsDelimiter(b)) return; // skip delimiters
-            else if(IsEnd(b)) {
-                UartCmdCallback(CmdCode, CmdData, (PCmdWrite - CmdData));
-                IResetCmd();
-            }
-            else IResetCmd();
-            break;
-
-        case rsData2:
-            if(TryConvertToDigit(b, &d)) {
-                *PCmdWrite |= d;
-                RxState = rsData1;  // Prepare to rx next byte
-                if(PCmdWrite < (CmdData + (UART_CMDDATA_SZ-1))) PCmdWrite++;
-            }
-            else IResetCmd(); // Delimiters and End symbols are not allowed in the middle of byte
-            break;
-
-        default: break;
-    } // switch
+void CmdUart_t::CompleteCmd() {
+    if(PCmdWrite->IsEmpty()) return;
+    chSysLock();
+    PCmdWrite->Finalize();
+    PCmdRead = PCmdWrite;
+    PCmdWrite = (PCmdWrite == &ICmd[0])? &ICmd[1] : &ICmd[0];
+    PCmdWrite->Cnt = 0;
+    chSysUnlock();
+    App.OnUartCmd(PCmdRead);
 }
 #endif
 
@@ -166,6 +132,12 @@ void CmdUart_t::Init(uint32_t ABaudrate) {
     UART->CR1 |= USART_CR1_UE;    // Enable USART
 }
 
+
+void CmdUart_t::OnAHBFreqChange() {
+    if(UART == USART1) UART->BRR = Clk.APB2FreqHz / IBaudrate;
+    else               UART->BRR = Clk.APB1FreqHz / IBaudrate;
+}
+
 // ==== TX DMA IRQ ====
 void CmdUart_t::IRQDmaTxHandler() {
     dmaStreamDisable(UART_DMA_TX);    // Registers may be changed only when stream is disabled
@@ -174,12 +146,5 @@ void CmdUart_t::IRQDmaTxHandler() {
     if(PRead >= (TXBuf + UART_TXBUF_SIZE)) PRead = TXBuf; // Circulate pointer
 
     if(IFullSlotsCount == 0) IDmaIsIdle = true; // Nothing left to send
-    else {  // There is something to transmit more
-        dmaStreamSetMemory0(UART_DMA_TX, PRead);
-        uint32_t PartSz = (TXBuf + UART_TXBUF_SIZE) - PRead;
-        ITransSize = (IFullSlotsCount > PartSz)? PartSz : IFullSlotsCount;
-        dmaStreamSetTransactionSize(UART_DMA_TX, ITransSize);
-        dmaStreamSetMode(UART_DMA_TX, UART_DMA_TX_MODE);
-        dmaStreamEnable(UART_DMA_TX);    // Restart DMA
-    }
+    else ISendViaDMA();
 }
