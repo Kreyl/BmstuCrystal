@@ -49,7 +49,7 @@
 /**
  * @brief   Defines the support for realtime counters in the HAL.
  */
-#define HAL_IMPLEMENTS_COUNTERS FALSE
+#define HAL_IMPLEMENTS_COUNTERS TRUE
 
 /**
  * @name    Platform identification macros
@@ -998,6 +998,15 @@
 #define TIM8_UP_IRQn        TIM8_UP_TIM13_IRQn
 #define TIM8_TRG_COM_IRQn   TIM8_TRG_COM_TIM14_IRQn
 
+/**
+ * @brief   Type representing a system clock frequency.
+ */
+typedef uint32_t halclock_t;
+
+/**
+ * @brief   Type of the realtime free counter value.
+ */
+typedef uint32_t halrtcnt_t;
 
 /*===========================================================================*/
 /* Driver macros.                                                            */

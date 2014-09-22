@@ -44,7 +44,7 @@
 #define STM32_DMA_REQUIRED  TRUE    // @KL
 
 /* Abstract interfaces.*/
-//#include "io_channel.h"
+#include "io_channel.h"
 //#include "io_block.h"
 
 /* Shared headers.*/
@@ -66,11 +66,11 @@
 //#include "sdc.h"
 //#include "spi.h"
 //#include "uart.h"
-//#include "usb.h"
+#include "usb.h"
 
 /* Complex drivers.*/
 //#include "mmc_spi.h"
-//#include "serial_usb.h"
+#include "serial_usb.h"
 
 /*===========================================================================*/
 /* Driver constants.                                                         */

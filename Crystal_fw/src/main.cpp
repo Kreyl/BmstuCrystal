@@ -6,8 +6,7 @@
  */
 
 #include "main.h"
-#include "usb_f4.h"
-#include "usb_uart.h"
+#include "usbcfg.h"
 
 /*
  * DMA:
@@ -16,6 +15,7 @@
  */
 
 App_t App;
+SerialUSBDriver SDU1;
 
 int main(void) {
     // ==== Setup clock frequency ====
@@ -46,10 +46,19 @@ int main(void) {
 
     App.Init();
 
-    Usb.Init();
-    UsbUart.Init();
+    sduObjectInit(&SDU1);
+    sduStart(&SDU1, &serusbcfg);
+
+    usbDisconnectBus(serusbcfg.usbp);
     chThdSleepMilliseconds(540);
-    Usb.Connect();
+    usbStart(serusbcfg.usbp, &usbcfg);
+    usbConnectBus(serusbcfg.usbp);
+
+
+//    Usb.Init();
+//    UsbUart.Init();
+//    chThdSleepMilliseconds(540);
+//    Usb.Connect();
 
     // Main thread
     while(true) App.ITask();
@@ -71,7 +80,7 @@ void App_t::Init() {
 
 void App_t::ITask() {
     chThdSleepMilliseconds(2007);
-    UsbUart.Printf("\rAga");
+//    UsbUart.Printf("\rAga");
 
 //    uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 //    if(EvtMsk & EVTMSK_ADC_READY) {
