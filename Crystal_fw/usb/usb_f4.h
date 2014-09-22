@@ -21,7 +21,6 @@ enum EpPktState_t {psNoPkt, psDataPkt, psZeroPkt};
 class Ep_t {
 private:
     uint8_t Indx;
-    InputQueue *POutQueue;
     EpState_t State;
     EpPktState_t PktState;
     Thread *PThread;
@@ -36,6 +35,7 @@ private:
     void DisableInFifoEmptyIRQ() { OTG_FS->DIEPEMPMSK &= ~(1 << Indx); }
     bool InFifoEmptyIRQEnabled() { return (OTG_FS->DIEPEMPMSK & DIEPEMPMSK_INEPTXFEM(Indx)); }
     // ==== IN ====
+    OutputQueue *PInQueue;
     void BufToFifo();
     void PrepareInTransaction() {
         uint32_t pcnt = (LengthIn + EpCfg[Indx].InMaxsize - 1) / EpCfg[Indx].InMaxsize;
@@ -54,18 +54,19 @@ private:
         uint32_t PktCnt = (Len + EpCfg[Indx].OutMaxsize - 1) / EpCfg[Indx].OutMaxsize;
         OTG_FS->oe[Indx].DOEPTSIZ = DOEPTSIZ_STUPCNT(3) | DOEPTSIZ_PKTCNT(PktCnt) | Len;
     }
-    void StartOutTransaction() { OTG_FS->oe[Indx].DOEPCTL |= DOEPCTL_CNAK; }
     void FifoToBuf(uint8_t *PDstBuf, uint32_t Len);
     void FifoToQueue(uint32_t Len);
-//    uint16_t GetRxDataLength();
+    void QueueToFifo();
     void ResumeWaitingThd(uint8_t ReadyMsg);
 public:
     // OUT
+    InputQueue *POutQueue;
     uint32_t GetRcvResidueLen() { return LengthOut; }
     void StartReceiveToBuf(uint8_t *PDst, uint32_t Len);
-    void AssignOutQueue(InputQueue *PQueue) { POutQueue = PQueue; }
+    void StartOutTransaction() { OTG_FS->oe[Indx].DOEPCTL |= DOEPCTL_CNAK; }
     // IN
     void StartTransmitBuf(uint8_t *PSrc, uint32_t ALen);
+    void StartTransmitQueue(OutputQueue *PQ);
     // Common
     uint8_t WaitUntilReady();
     // Stall operations
@@ -99,18 +100,26 @@ struct UsbSetupReq_t {
 #if 1 // ============================ Usb_t ====================================
 #define USB_RX_SZ_WORDS     256 // => Sz_in_bytes = 256*4 = 1024; 256 is maximum
 
+// Functional type for unhandled ctrl pkt
+typedef EpState_t (*ftCtrlPkt)(uint8_t **PPtr, uint32_t *PLen);
+
+struct UsbEvents_t {
+    ftVoidVoid OnReady;
+    ftVoidVoid OnWakeup;
+    ftVoidVoid OnSuspend;
+    ftCtrlPkt  OnCtrlPkt;
+    ftVoidVoid OnTransactionEnd[EP_CNT];
+};
+
 class Usb_t {
 private:
     Ep_t Ep[EP_CNT];
     uint8_t Ep0InBuf[EP0_SZ];
-    union {
-        uint8_t Ep0OutBuf[EP0_SZ];
-        UsbSetupReq_t SetupReq;
-    };
-    uint8_t Ep1OutBuf[EP0_SZ];
     uint8_t Configuration;
     // Initialization
-    void IDeviceReset();
+    void IReset();
+    void ISuspend();
+    void IWakeup();
     void IEndpointsDisable();
     void IRamInit();
     void IEpOutHandler(uint8_t EpID);
@@ -125,24 +134,19 @@ private:
     void PrepareInTransaction(uint8_t *Ptr, uint32_t ALen);
     void IEndpointsInit();
 public:
+    union {
+        uint8_t Ep0OutBuf[EP0_SZ];
+        UsbSetupReq_t SetupReq;
+    };
     bool IsReady;
-    Thread *PThread;
+    UsbEvents_t Events;
     void Init();
     void Connect()    { OTG_FS->GCCFG |=  GCCFG_NOVBUSSENS | GCCFG_VBUSBSEN; }
     void Disconnect() { OTG_FS->GCCFG &= ~GCCFG_VBUSBSEN; }
     void Shutdown();
-    void DeInit() {
-        Disconnect();
-        Shutdown();
-        IDeviceReset();
-        IEndpointsDisable();
-    }
     Ep_t *PEpBulkOut, *PEpBulkIn;
-    // Data operations
-    EpState_t NonStandardControlRequestHandler(uint8_t **PPtr, uint32_t *PLen);
     // Inner use
     void IIrqHandler();
-//    inline void IStartReception(uint8_t EpID) { Ep[EpID].StartOutTransaction(); }
     friend class Ep_t;
 };
 
@@ -169,6 +173,8 @@ extern Usb_t Usb;
 // Setup request type (bmRequestType)
 #define USB_REQTYPE_DEV2HOST                (1<<7)
 #define USB_REQTYPE_HOST2DEV                (0<<7)
+
+#define USB_REQTYPE_TYPEMASK                0x60
 #define USB_REQTYPE_STANDARD                (0<<5)
 #define USB_REQTYPE_CLASS                   (1<<5)
 #define USB_REQTYPE_VENDOR                  (2<<5)

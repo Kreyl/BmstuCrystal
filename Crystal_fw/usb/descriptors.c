@@ -23,24 +23,24 @@ const EpCfg_t EpCfg[EP_CNT] = {
             InMaxsize:  EP0_SZ,
             OutMaxsize: EP0_SZ,
         },
-        // Bulk Out endpoint, Indx = 1
+        // Interrupt In endpoint, Indx = 1
+        {
+            Type:       EP_TYPE_INTERRUPT,
+            InMaxsize:  EP_INTERRUPT_SZ,
+            OutMaxsize: 0,
+        },
+        // Bulk Out endpoint, Indx = 2
         {
             Type:       EP_TYPE_BULK,
             InMaxsize:  0,
             OutMaxsize: EP_BULK_SZ,
         },
-        // Bulk In endpoint, Indx = 2
+        // Bulk In endpoint, Indx = 3
         {
             Type:       EP_TYPE_BULK,
             InMaxsize:  EP_BULK_SZ,
             OutMaxsize: 0,
         },
-        // Interrupt In endpoint, Indx = 3
-        {
-            Type:       EP_TYPE_INTERRUPT,
-            InMaxsize:  EP_INTERRUPT_SZ,
-            OutMaxsize: 0,
-        }
 };
 #endif
 

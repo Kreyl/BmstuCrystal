@@ -7,6 +7,7 @@
 
 #include "main.h"
 #include "usb_f4.h"
+#include "usb_uart.h"
 
 /*
  * DMA:
@@ -41,11 +42,12 @@ int main(void) {
 //    PinSetupOut(LEDS_GPIO, LED_RED_PIN, omPushPull);
 
     Uart.Init(256000);
-    Uart.Printf("Crystal AHB=%uMHz\r", Clk.AHBFreqHz/1000000);
+    Uart.Printf("\rCrystal AHB=%uMHz", Clk.AHBFreqHz/1000000);
 
     App.Init();
 
     Usb.Init();
+    UsbUart.Init();
     chThdSleepMilliseconds(540);
     Usb.Connect();
 
@@ -68,17 +70,23 @@ void App_t::Init() {
 }
 
 void App_t::ITask() {
-    uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
-    if(EvtMsk & EVTMSK_ADC_READY) {
-//        y[0] = Adc.Rslt;
-//        AddNewX(Adc.Rslt);
+    chThdSleepMilliseconds(2007);
+    UsbUart.Printf("\rAga");
 
-//        LED_YELLOW_ON();
-        //CalculateNewY();
-//        DummyY = Adc.Rslt / 2;
-    }
-
-    if(EvtMsk & EVTMSK_USB_READY) LED_GREEN_ON();
+//    uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
+//    if(EvtMsk & EVTMSK_ADC_READY) {
+////        y[0] = Adc.Rslt;
+////        AddNewX(Adc.Rslt);
+//
+////        LED_YELLOW_ON();
+//        //CalculateNewY();
+////        DummyY = Adc.Rslt / 2;
+//    }
+//
+//    if(EvtMsk & EVTMSK_USB_READY) {
+//        Uart.Printf("\rUsbReady");
+//        LED_GREEN_ON();
+//    }
 }
 
 void App_t::AddNewX(int32_t NewX) {

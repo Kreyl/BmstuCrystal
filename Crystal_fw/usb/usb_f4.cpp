@@ -19,7 +19,7 @@
 #define EP0_SZ_BITS ((uint32_t)0b00)
 #endif
 
-#define EP0_VERBOSE
+//#define EP0_VERBOSE
 
 #ifdef EP0_VERBOSE
 #define EP0_PRINT(S)                Uart.PrintfI(S)
@@ -30,6 +30,7 @@
 #define EP0_PRINT(S)
 #define EP0_PRINT_V1(S, a1)
 #define EP0_PRINT_V1V2(S, a1, a2)
+#define EP0_PRINT_V1V2V3(S, a1, a2, a3)
 #endif
 
 Usb_t Usb;
@@ -84,15 +85,18 @@ void Usb_t::Init() {
 }
 
 void Usb_t::Shutdown() {
+    Disconnect();
     chSysLock();
     OTG_FS->PCGCCTL |= PCGCCTL_STPPCLK | PCGCCTL_GATEHCLK; // Stop PHY clock, gate HCLK
     rccDisableOTG_FS(FALSE);
     nvicDisableVector(STM32_OTG1_NUMBER);
     IsReady = false;
     chSysUnlock();
+    IReset();
+    IEndpointsDisable();
 }
 
-void Usb_t::IDeviceReset() {
+void Usb_t::IReset() {
 //    Uart.PrintfI("\rRst");
     IsReady = false;
     TxFifoFlush(); // TX FIFO flush
@@ -225,14 +229,15 @@ void Usb_t::IEndpointsInit() {
 
 #if 1 // =========================== High level ================================
 void Usb_t::SetupPktHandler() {
-    Uart.PrintfI("\rSetup %A", Ep0OutBuf, 8, ' ');
+//    Uart.PrintfI("\rSetup %A", Ep0OutBuf, 8, ' ');
     // Try to handle request
     uint8_t *FPtr;
     uint32_t FLength;
     Ep[0].State = DefaultReqHandler(&FPtr, &FLength);
     // If standard request handler failed, try handle it in application
-    if(Ep[0].State == esError) Ep[0].State = NonStandardControlRequestHandler(&FPtr, &FLength);
-    // Prepare to next transaction
+    if(Ep[0].State == esError) {
+        if(Events.OnCtrlPkt != nullptr) Ep[0].State = Events.OnCtrlPkt(&FPtr, &FLength);
+    }    // Prepare to next transaction
     switch(Ep[0].State) {
         case esInData:
             Ep[0].PtrIn = FPtr;
@@ -291,14 +296,9 @@ EpState_t Usb_t::DefaultReqHandler(uint8_t **PPtr, uint32_t *PLen) {
                 EP0_PRINT_V1("\rSetCnf %u", SetupReq.wValue);
                 Configuration = (uint8_t)(SetupReq.wValue & 0xFF);
                 *PLen = 0;
-                Uart.PrintfI("\rUsbConfigured");
                 IEndpointsInit();
                 IsReady = true;
-                if(PThread != nullptr) {
-                    chSysLockFromIsr();
-                    chEvtSignalI(PThread, EVTMSK_USB_READY);
-                    chSysUnlockFromIsr();
-                }
+                if(Events.OnReady != nullptr) Events.OnReady();
                 return esOutStatus;
                 break;
             default: break;
@@ -352,11 +352,6 @@ EpState_t Usb_t::DefaultReqHandler(uint8_t **PPtr, uint32_t *PLen) {
     } // if Ep
     return esError;
 }
-
-__attribute__((weak))
-EpState_t Usb_t::NonStandardControlRequestHandler(uint8_t **PPtr, uint32_t *PLen) {
-    return esError;
-}
 #endif
 
 #if 1 // =============================== IRQ ===================================
@@ -376,7 +371,7 @@ void Usb_t::IIrqHandler() {
 //    Uart.PrintfI("\rIrq: %X", irqs);
 
     // Reset
-    if(irqs & GINTSTS_USBRST) IDeviceReset();
+    if(irqs & GINTSTS_USBRST) IReset();
     // Enumeration done
     if(irqs & GINTSTS_ENUMDNE) { (void)OTG_FS->DSTS; }
     // RX FIFO not empty
@@ -485,7 +480,12 @@ void Usb_t::IEpInHandler(uint8_t EpID) {
     // TX FIFO empty
     if((epint & DIEPINT_TXFE) and Ep[EpID].InFifoEmptyIRQEnabled()) {
 //        Uart.Printf("In TXFE\r");
-        Ep[EpID].BufToFifo();
+        if(ep->LengthIn > 0) ep->BufToFifo();
+        else if(ep->LengthIn != nullptr) ep->QueueToFifo();
+        else {  // Buf len == 0
+            ep->State = esIdle;
+            ep->ResumeWaitingThd(RDY_OK);
+        }
     } // if txfe
 }
 
@@ -624,6 +624,17 @@ void Ep_t::StartTransmitBuf(uint8_t *Ptr, uint32_t ALen) {
     PtrIn = Ptr;
     Buzy = true;
     LengthIn = ALen;
+    PrepareInTransaction();   // Just prepare; may not fill fifo here
+    StartInTransaction();
+    chSysUnlock();
+}
+
+void Ep_t::WriteFromQueue(OutputQueue *PQ) {
+    chSysLock();
+    if(chOQGetFullI(PQ) == 0) return;
+    PInQueue = PQ;
+    LengthIn = 0;
+    Buzy = true;
     PrepareInTransaction();   // Just prepare; may not fill fifo here
     StartInTransaction();
     chSysUnlock();
