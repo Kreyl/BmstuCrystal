@@ -15,34 +15,6 @@
 #define USB_STRING_LEN(UnicodeChars)      (2 + ((UnicodeChars) << 1))
 
 #if USB_CDC
-#if 1 // ==== Endpoints config ====
-const EpCfg_t EpCfg[EP_CNT] = {
-        // Control endpoint, Indx = 0
-        {
-            Type:       EP_TYPE_CONTROL,
-            InMaxsize:  EP0_SZ,
-            OutMaxsize: EP0_SZ,
-        },
-        // Interrupt In endpoint, Indx = 1
-        {
-            Type:       EP_TYPE_INTERRUPT,
-            InMaxsize:  EP_INTERRUPT_SZ,
-            OutMaxsize: 0,
-        },
-        // Bulk Out endpoint, Indx = 2
-        {
-            Type:       EP_TYPE_BULK,
-            InMaxsize:  0,
-            OutMaxsize: EP_BULK_SZ,
-        },
-        // Bulk In endpoint, Indx = 3
-        {
-            Type:       EP_TYPE_BULK,
-            InMaxsize:  EP_BULK_SZ,
-            OutMaxsize: 0,
-        },
-};
-#endif
 
 #if 1 // ==== Device Descriptor ====
 static const DeviceDescriptor_t DeviceDescriptor = {
@@ -122,7 +94,7 @@ static const ConfigDescriptor_t ConfigDescriptor = {
         NotificationEndpoint: {
             bLength:            sizeof(EndpointDescriptor_t),
             bDescriptorType:    dtEndpoint,
-            bEndpointAddress:   (EP_DIR_IN | EP_INTERRUPT_ADDR),
+            bEndpointAddress:   (EP_DIR_IN | EP_INTERRUPT_INDX),
             bmAttributes:       (EP_TYPE_INTERRUPT | EP_ATTR_NO_SYNC | EP_USAGE_DATA),
             wMaxPacketSize:     EP_INTERRUPT_SZ,
             bInterval:          0xFF
@@ -144,7 +116,7 @@ static const ConfigDescriptor_t ConfigDescriptor = {
         DataOutEndpoint: {
             bLength:            sizeof(EndpointDescriptor_t),
             bDescriptorType:    dtEndpoint,
-            bEndpointAddress:   (EP_DIR_OUT | EP_BULK_OUT_ADDR),
+            bEndpointAddress:   (EP_DIR_OUT | EP_BULK_OUT_INDX),
             bmAttributes:       (EP_TYPE_BULK | EP_ATTR_NO_SYNC | EP_USAGE_DATA),
             wMaxPacketSize:     EP_BULK_SZ,
             bInterval:          0x00
@@ -153,7 +125,7 @@ static const ConfigDescriptor_t ConfigDescriptor = {
         DataInEndpoint: {
             bLength:            sizeof(EndpointDescriptor_t),
             bDescriptorType:    dtEndpoint,
-            bEndpointAddress:   (EP_DIR_IN | EP_BULK_IN_ADDR),
+            bEndpointAddress:   (EP_DIR_IN | EP_BULK_IN_INDX),
             bmAttributes:       (EP_TYPE_BULK | EP_ATTR_NO_SYNC | EP_USAGE_DATA),
             wMaxPacketSize:     EP_BULK_SZ,
             bInterval:          0x00

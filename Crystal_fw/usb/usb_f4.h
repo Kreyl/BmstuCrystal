@@ -37,9 +37,9 @@ private:
     // ==== IN ====
     OutputQueue *PInQueue;
     void BufToFifo();
-    void PrepareInTransaction() {
-        uint32_t pcnt = (LengthIn + EpCfg[Indx].InMaxsize - 1) / EpCfg[Indx].InMaxsize;
-        OTG_FS->ie[Indx].DIEPTSIZ = DIEPTSIZ_PKTCNT(pcnt) | LengthIn;
+    void PrepareInTransaction(uint32_t Length) {
+        uint32_t pcnt = (Length + EpCfg[Indx].InMaxsize - 1) / EpCfg[Indx].InMaxsize;
+        OTG_FS->ie[Indx].DIEPTSIZ = DIEPTSIZ_PKTCNT(pcnt) | Length;
     }
     void StartInTransaction()  {
         OTG_FS->ie[Indx].DIEPCTL |= DIEPCTL_EPENA | DIEPCTL_CNAK;   // Enable Ep and clear NAK

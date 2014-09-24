@@ -22,7 +22,7 @@ public:
     void Init();
     void SendBuf(uint8_t *PBuf, uint32_t Len) {
         chOQWriteTimeout(&UsbInQueue, PBuf, Len, TIME_INFINITE);
-        Usb.PEpBulkIn->WriteFromQueue(&UsbInQueue);
+        Usb.PEpBulkIn->StartTransmitQueue(&UsbInQueue);
     }
     uint8_t GetByte(uint8_t *PByte, systime_t Timeout = TIME_INFINITE) {
         msg_t r = chIQGetTimeout(&UsbOutQueue, Timeout);

@@ -118,11 +118,14 @@ void UsbUart_t::Init() {
 
 static inline void FPutChar(char c) { chOQPut(&UsbUart.UsbInQueue, c); }
 
+uint8_t dummybuf[9] = {1, 2,3,4,5,6,7,8,9};
+
 void UsbUart_t::Printf(const char *format, ...) {
     va_list args;
     va_start(args, format);
     kl_vsprintf(FPutChar, CDC_INQ_SZ, format, args);
     va_end(args);
     // Start transmission
+//    Usb.PEpBulkIn->StartTransmitBuf(dummybuf, 9);
     Usb.PEpBulkIn->StartTransmitQueue(&UsbInQueue);
 }

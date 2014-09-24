@@ -38,12 +38,10 @@ void CmdUart_t::Printf(const char *format, ...) {
 }
 
 void CmdUart_t::PrintfI(const char *format, ...) {
-    chSysLockFromIsr();
     va_list args;
     va_start(args, format);
     IPrintf(format, args);
     va_end(args);
-    chSysUnlockFromIsr();
 }
 
 void CmdUart_t::IPrintf(const char *format, va_list args) {

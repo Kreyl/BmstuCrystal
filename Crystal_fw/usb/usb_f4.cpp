@@ -9,6 +9,11 @@
 #include "evt_mask.h"
 #include "cmd_uart.h"
 
+union DWordBytes_t {
+    uint8_t b[4];
+    uint32_t DWord;
+};
+
 //#define TRDT        0xF  // AHB clock = 24, => TRDT = 4 * (24/48) +1
 #define TRDT        5  // AHB clock = 48, => TRDT = 4 * (48/48) +1
 
@@ -44,8 +49,8 @@ void Usb_t::Init() {
     PinSetupAlterFunc(GPIOA, 11, omOpenDrain, pudNone, AF10);
     PinSetupAlterFunc(GPIOA, 12, omOpenDrain, pudNone, AF10);
     // Init Eps' indxs
-    PEpBulkOut = &Ep[1];    // Out endpoint
-    PEpBulkIn  = &Ep[2];    // In endpoint
+    PEpBulkOut = &Ep[EP_BULK_OUT_INDX]; // Out endpoint
+    PEpBulkIn  = &Ep[EP_BULK_IN_INDX];  // In endpoint
     for(uint8_t i=0; i<EP_CNT; i++) Ep[i].Indx = i;
 
     // OTG FS clock enable and reset
@@ -242,7 +247,7 @@ void Usb_t::SetupPktHandler() {
         case esInData:
             Ep[0].PtrIn = FPtr;
             Ep[0].LengthIn = FLength;
-            Ep[0].PrepareInTransaction();   // Just prepare; may not fill fifo here
+            Ep[0].PrepareInTransaction(FLength);   // Just prepare; may not fill fifo here
             Ep[0].StartInTransaction();
             break;
         case esOutStatus:
@@ -480,8 +485,8 @@ void Usb_t::IEpInHandler(uint8_t EpID) {
     // TX FIFO empty
     if((epint & DIEPINT_TXFE) and Ep[EpID].InFifoEmptyIRQEnabled()) {
 //        Uart.Printf("In TXFE\r");
-        if(ep->LengthIn > 0) ep->BufToFifo();
-        else if(ep->LengthIn != nullptr) ep->QueueToFifo();
+        if(ep->LengthIn > 0 and ep->PtrIn != nullptr) ep->BufToFifo();
+        else if(ep->PInQueue != nullptr) ep->QueueToFifo();
         else {  // Buf len == 0
             ep->State = esIdle;
             ep->ResumeWaitingThd(RDY_OK);
@@ -604,11 +609,52 @@ void Ep_t::BufToFifo() {
         WrittenBytesCnt += 4;
         // Check if data buffer is not empty
         if(LengthIn >= 4) LengthIn -= 4;
-        else LengthIn = 0;
+        else {
+            LengthIn = 0;
+            PtrIn = nullptr;
+        }
     }
     TransmitFinalZeroPkt = (WrittenBytesCnt == EpCfg[Indx].InMaxsize) and (LengthIn == 0);
     // Disable TxEmpty IRQ if everything is sent
     if(LengthIn == 0) DisableInFifoEmptyIRQ();
+}
+
+void Ep_t::QueueToFifo() {
+    chSysLockFromIsr();
+//    Uart.PrintfI("\r%S", __FUNCTION__);
+    uint32_t n = chOQGetFullI(PInQueue);
+//    Uart.PrintfI("\rN=%u", n);
+
+//        int r = chOQGetI(PInQueue);
+//        Uart.PrintfI("\r%d", r);
+//        if(n > EpCfg[Indx].InMaxsize) n = EpCfg[Indx].InMaxsize;
+//        else {
+//            PInQueue = nullptr; // Forget the queue
+//            TransmitFinalZeroPkt = (n == EpCfg[Indx].InMaxsize);
+//        }
+//        // Fill from queue
+//        n = (n + 3) / 4;
+    volatile uint32_t *pDst = OTG_FS->FIFO[Indx];
+    DWordBytes_t Src;
+    while(n > 0) {
+        for(uint8_t i=0; i<4; i++) {
+            msg_t r = chOQGetI(PInQueue);
+            Uart.PrintfI("\r%d", r);
+            if(r >= 0) {
+                Src.b[i] = r;
+                n--;
+            }
+            else break;
+        } // for
+        Uart.PrintfI("\r%A", Src.b, 4, ' ');
+        *pDst = Src.DWord;
+        if(chOQIsEmptyI(PInQueue)) {
+            DisableInFifoEmptyIRQ();
+            PInQueue = nullptr; // Forget the queue
+            break;
+        }
+    } // while n>0
+    chSysUnlockFromIsr();
 }
 
 // ==== Transactions ====
@@ -619,23 +665,27 @@ void Ep_t::TransmitZeroPkt() {
 }
 
 void Ep_t::StartTransmitBuf(uint8_t *Ptr, uint32_t ALen) {
- //    Uart.Printf("TxBuf Ep%u; %A\r", Indx, Ptr, ALen, ' ');
+    Uart.Printf("\rTxBuf Ep%u; %A", Indx, Ptr, ALen, ' ');
     chSysLock();
     PtrIn = Ptr;
+    PInQueue = nullptr;
     Buzy = true;
     LengthIn = ALen;
-    PrepareInTransaction();   // Just prepare; may not fill fifo here
+    PrepareInTransaction(LengthIn);   // Just prepare; may not fill fifo here
     StartInTransaction();
     chSysUnlock();
 }
 
-void Ep_t::WriteFromQueue(OutputQueue *PQ) {
+void Ep_t::StartTransmitQueue(OutputQueue *PQ) {
+    Uart.Printf("\r%S", __FUNCTION__);
+    if(Buzy) return;
     chSysLock();
-    if(chOQGetFullI(PQ) == 0) return;
+    uint32_t n = chOQGetFullI(PQ);
+    if(n == 0) return;
     PInQueue = PQ;
-    LengthIn = 0;
+    PtrIn = nullptr;
     Buzy = true;
-    PrepareInTransaction();   // Just prepare; may not fill fifo here
+    PrepareInTransaction(n);   // Just prepare; may not fill fifo here
     StartInTransaction();
     chSysUnlock();
 }

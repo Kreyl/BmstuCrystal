@@ -140,11 +140,19 @@ typedef struct {
 #if 1 // ========================== CDC descriptors ============================
 #define USB_CDC     1
 
-#define EP_CNT                  4   // Control, In & Out, Interrupt
-// Endpoint addresses. Nothing to do with inner Indx value.
-#define EP_BULK_OUT_ADDR        1
-#define EP_BULK_IN_ADDR         2
-#define EP_INTERRUPT_ADDR       3
+#if 1 // ==== Endpoints config ====
+#define EP_CNT      4   // Control, In & Out, Interrupt
+const EpCfg_t EpCfg[EP_CNT] = {
+        {EP_TYPE_CONTROL, EP0_SZ, EP0_SZ},          // Control endpoint, Indx = 0
+        {EP_TYPE_INTERRUPT, EP_INTERRUPT_SZ, 0},    // Interrupt In endpoint, Indx = 1
+        {EP_TYPE_BULK, 0, EP_BULK_SZ},              // Bulk Out endpoint, Indx = 2
+        {EP_TYPE_BULK, EP_BULK_SZ, 0},              // Bulk In endpoint, Indx = 3
+};
+#define EP_INTERRUPT_INDX   1
+#define EP_BULK_OUT_INDX    2
+#define EP_BULK_IN_INDX     3
+#endif
+
 
 typedef struct {
     uint8_t  bFunctionLength;   // Size of the descriptor, in bytes
@@ -192,8 +200,6 @@ typedef struct {
     EndpointDescriptor_t    DataInEndpoint;
 } __attribute__ ((__packed__)) ConfigDescriptor_t;
 #endif
-
-extern const EpCfg_t EpCfg[EP_CNT];
 
 #ifdef __cplusplus
 }
