@@ -479,6 +479,7 @@ void Usb_t::IEpInHandler(uint8_t EpID) {
             } // switch
         } // if(EpID == 0)
         else {
+            if(ep->TransmitFinalZeroPkt) ep->TransmitZeroPkt();
             ep->ResumeWaitingThd(OK);
         }
     }
@@ -623,6 +624,7 @@ void Ep_t::QueueToFifo() {
     chSysLockFromIsr();
 //    Uart.PrintfI("\r%S", __FUNCTION__);
     uint32_t n = chOQGetFullI(PInQueue);
+    TransmitFinalZeroPkt = (n == EpCfg[Indx].InMaxsize);
     if(n > EpCfg[Indx].InMaxsize) n = EpCfg[Indx].InMaxsize;
     // Fill from queue
     volatile uint32_t *pDst = OTG_FS->FIFO[Indx];
@@ -639,7 +641,6 @@ void Ep_t::QueueToFifo() {
         if(chOQIsEmptyI(PInQueue)) {
             DisableInFifoEmptyIRQ();
             PInQueue = nullptr; // Forget the queue
-            TransmitFinalZeroPkt = (n == EpCfg[Indx].InMaxsize);
             break;
         }
     } // while n>0
@@ -648,7 +649,8 @@ void Ep_t::QueueToFifo() {
 
 // ==== Transactions ====
 void Ep_t::TransmitZeroPkt() {
-//    Uart.Printf("Tx0\r");
+//    Uart.Printf("TxZero\r");
+    TransmitFinalZeroPkt = false;
     OTG_FS->ie[Indx].DIEPTSIZ = DIEPTSIZ_PKTCNT(1) | DIEPTSIZ_XFRSIZ(0);
     OTG_FS->ie[Indx].DIEPCTL |= DIEPCTL_EPENA | DIEPCTL_CNAK;   // Enable Ep and clear NAK
 }
