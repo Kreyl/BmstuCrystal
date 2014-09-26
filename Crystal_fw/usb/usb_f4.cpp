@@ -483,7 +483,7 @@ void Usb_t::IEpInHandler(uint8_t EpID) {
         }
     }
     // TX FIFO empty
-    if((epint & DIEPINT_TXFE) and Ep[EpID].InFifoEmptyIRQEnabled()) {
+    if((epint & DIEPINT_TXFE) and ep->InFifoEmptyIRQEnabled()) {
 //        Uart.Printf("In TXFE\r");
         if(ep->LengthIn > 0 and ep->PtrIn != nullptr) ep->BufToFifo();
         else if(ep->PInQueue != nullptr) ep->QueueToFifo();
@@ -623,34 +623,23 @@ void Ep_t::QueueToFifo() {
     chSysLockFromIsr();
 //    Uart.PrintfI("\r%S", __FUNCTION__);
     uint32_t n = chOQGetFullI(PInQueue);
-//    Uart.PrintfI("\rN=%u", n);
-
-//        int r = chOQGetI(PInQueue);
-//        Uart.PrintfI("\r%d", r);
-//        if(n > EpCfg[Indx].InMaxsize) n = EpCfg[Indx].InMaxsize;
-//        else {
-//            PInQueue = nullptr; // Forget the queue
-//            TransmitFinalZeroPkt = (n == EpCfg[Indx].InMaxsize);
-//        }
-//        // Fill from queue
-//        n = (n + 3) / 4;
+    if(n > EpCfg[Indx].InMaxsize) n = EpCfg[Indx].InMaxsize;
+    // Fill from queue
     volatile uint32_t *pDst = OTG_FS->FIFO[Indx];
     DWordBytes_t Src;
+    n = (n + 3) / 4;
     while(n > 0) {
-        for(uint8_t i=0; i<4; i++) {
-            msg_t r = chOQGetI(PInQueue);
-            Uart.PrintfI("\r%d", r);
-            if(r >= 0) {
-                Src.b[i] = r;
-                n--;
-            }
-            else break;
-        } // for
-        Uart.PrintfI("\r%A", Src.b, 4, ' ');
+        Src.b[0] = chOQGetI(PInQueue);
+        Src.b[1] = chOQGetI(PInQueue);
+        Src.b[2] = chOQGetI(PInQueue);
+        Src.b[3] = chOQGetI(PInQueue);
+        n--;
+//        Uart.PrintfI("\r%A", Src.b, 4, ' ');
         *pDst = Src.DWord;
         if(chOQIsEmptyI(PInQueue)) {
             DisableInFifoEmptyIRQ();
             PInQueue = nullptr; // Forget the queue
+            TransmitFinalZeroPkt = (n == EpCfg[Indx].InMaxsize);
             break;
         }
     } // while n>0
@@ -665,7 +654,7 @@ void Ep_t::TransmitZeroPkt() {
 }
 
 void Ep_t::StartTransmitBuf(uint8_t *Ptr, uint32_t ALen) {
-    Uart.Printf("\rTxBuf Ep%u; %A", Indx, Ptr, ALen, ' ');
+//    Uart.Printf("\rTxBuf Ep%u; %A", Indx, Ptr, ALen, ' ');
     chSysLock();
     PtrIn = Ptr;
     PInQueue = nullptr;
@@ -677,7 +666,7 @@ void Ep_t::StartTransmitBuf(uint8_t *Ptr, uint32_t ALen) {
 }
 
 void Ep_t::StartTransmitQueue(OutputQueue *PQ) {
-    Uart.Printf("\r%S", __FUNCTION__);
+//    Uart.Printf("\r%S", __FUNCTION__);
     if(Buzy) return;
     chSysLock();
     uint32_t n = chOQGetFullI(PQ);

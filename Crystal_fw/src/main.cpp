@@ -70,8 +70,8 @@ void App_t::Init() {
 }
 
 void App_t::ITask() {
-    chThdSleepMilliseconds(2007);
-    UsbUart.Printf("\rAga");
+    chThdSleepMilliseconds(999);
+    UsbUart.Printf("\r23456789012345678901234567890123456789012345678901234567890123");
 
 //    uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 //    if(EvtMsk & EVTMSK_ADC_READY) {

@@ -98,7 +98,8 @@ struct UsbSetupReq_t {
 } __attribute__ ((__packed__));
 
 #if 1 // ============================ Usb_t ====================================
-#define USB_RX_SZ_WORDS     256 // => Sz_in_bytes = 256*4 = 1024; 256 is maximum
+//#define USB_RX_SZ_WORDS     256 // => Sz_in_bytes = 256*4 = 1024; 256 is maximum
+#define USB_RX_SZ_WORDS     128 // => Sz_in_bytes = 128*4 = 512
 
 // Functional type for unhandled ctrl pkt
 typedef EpState_t (*ftCtrlPkt)(uint8_t **PPtr, uint32_t *PLen);

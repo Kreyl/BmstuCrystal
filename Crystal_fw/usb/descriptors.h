@@ -143,10 +143,10 @@ typedef struct {
 #if 1 // ==== Endpoints config ====
 #define EP_CNT      4   // Control, In & Out, Interrupt
 const EpCfg_t EpCfg[EP_CNT] = {
-        {EP_TYPE_CONTROL, EP0_SZ, EP0_SZ},          // Control endpoint, Indx = 0
-        {EP_TYPE_INTERRUPT, EP_INTERRUPT_SZ, 0},    // Interrupt In endpoint, Indx = 1
-        {EP_TYPE_BULK, 0, EP_BULK_SZ},              // Bulk Out endpoint, Indx = 2
-        {EP_TYPE_BULK, EP_BULK_SZ, 0},              // Bulk In endpoint, Indx = 3
+        {EP_TYPE_CONTROL,   EP0_SZ,          EP0_SZ},       // Control endpoint, Indx = 0
+        {EP_TYPE_INTERRUPT, EP_INTERRUPT_SZ, 0},            // Interrupt In endpoint, Indx = 1
+        {EP_TYPE_BULK,      0,               EP_BULK_SZ},   // Bulk Out endpoint, Indx = 2
+        {EP_TYPE_BULK,      EP_BULK_SZ,      0},            // Bulk In endpoint, Indx = 3
 };
 #define EP_INTERRUPT_INDX   1
 #define EP_BULK_OUT_INDX    2
