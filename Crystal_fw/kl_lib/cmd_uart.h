@@ -51,30 +51,6 @@
                             STM32_DMA_CR_DIR_P2M |    /* Direction is peripheral to memory */ \
                             STM32_DMA_CR_CIRC         /* Circular buffer enable */
 
-#define DELIMITERS      " ,"
-class Cmd_t {
-private:
-    void Finalize() {
-        for(uint32_t i=Cnt; i < UART_CMD_BUF_SZ; i++) IString[i] = 0;
-        Name = strtok(IString, DELIMITERS);
-        GetNextToken();
-    }
-    void Backspace() { if(Cnt > 0) Cnt--; }
-    char IString[UART_CMD_BUF_SZ];
-    uint32_t Cnt;
-public:
-    char *Name, *Token;
-    void PutChar(char c) { if(Cnt < UART_CMD_BUF_SZ-1) IString[Cnt++] = c; }
-    bool IsEmpty() { return (Cnt == 0); }
-    uint8_t GetNextToken() {
-        Token = strtok(NULL, DELIMITERS);
-        return (*Token == '\0')? 1 : 0;
-    }
-    uint8_t TryConvertTokenToNumber(uint32_t *POutput) { return Convert::TryStrToUInt32(Token, POutput); }
-    uint8_t TryConvertTokenToNumber( int32_t *POutput) { return Convert::TryStrToInt32(Token, POutput); }
-    bool NameIs(const char *SCmd) { return (strcasecmp(Name, SCmd) == 0); }
-    friend class CmdUart_t;
-};
 #endif
 
 class CmdUart_t {

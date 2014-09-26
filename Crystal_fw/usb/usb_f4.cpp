@@ -514,11 +514,11 @@ void Usb_t::IRxHandler() {
             }
             else {
                 Ep[EpID].PktState = psDataPkt;
-//                Uart.Printf("DataRcvd for %u\r", EpID);
+//                Uart.PrintfI("\rDataRcvd for %u", EpID);
                 // Read to queue
                 if(Ep[EpID].POutQueue != nullptr) {
                     Ep[EpID].FifoToQueue(Len);
-                    return;
+                    if(Events.OnDataOUT[EpID] != nullptr) Events.OnDataOUT[EpID]();
                 }
                 // Read to buffer
                 else if((Ep[EpID].PtrOut != nullptr) and (Ep[EpID].LengthOut != 0)) {
@@ -526,10 +526,9 @@ void Usb_t::IRxHandler() {
                     Ep[EpID].FifoToBuf(Ep[EpID].PtrOut, Len);
                     Ep[EpID].LengthOut -= Len;
                     Ep[EpID].PtrOut += Len;
-                    return;
+                    if(Events.OnDataOUT[EpID] != nullptr and Ep[EpID].LengthOut == 0) Events.OnDataOUT[EpID]();
                 }
-//                Uart.Printf("\rUSB flush");
-                RxFifoFlush();
+                else RxFifoFlush();
             }
             break;
         case GRXSTSP_SETUP_COMP:    // Setup transaction completed

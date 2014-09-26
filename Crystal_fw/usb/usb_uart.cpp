@@ -57,9 +57,9 @@ static void OnUsbReady() {
     Usb.PEpBulkOut->StartOutTransaction();
 }
 
-static void SetLineCoding() {
+//static void SetLineCoding() {
 //    Uart.PrintfI("\r%S", __FUNCTION__);
-}
+//}
 static void SetCtrlLineState() {
 //    Uart.PrintfI("\r%S", __FUNCTION__);
 //    uint16_t w = Usb.SetupReq.wValue;
@@ -87,7 +87,7 @@ EpState_t NonStandardControlRequestHandler(uint8_t **PPtr, uint32_t *PLen) {
 //                Uart.PrintfI("\rSET_LINE_CODING");
                 *PPtr = (uint8_t*)&LineCoding;  // Do not use length in setup pkt
                 *PLen = sizeof(LineCoding);
-                Usb.Events.OnTransactionEnd[0] = SetLineCoding;
+//                Usb.Events.OnTransactionEnd[0] = SetLineCoding; // FIXME
                 return esOutData;
                 break;
 
@@ -101,12 +101,20 @@ EpState_t NonStandardControlRequestHandler(uint8_t **PPtr, uint32_t *PLen) {
     } // if class
     return esError;
 }
+
+void OnDataOUT() {
+    chSysLockFromIsr();
+    //Uart.PrintfI("\rDataOut");
+    App.SignalUsbDataOut();
+    chSysUnlockFromIsr();
+}
 #endif
 
 void UsbUart_t::Init() {
     // Usb events
     Usb.Events.OnCtrlPkt = NonStandardControlRequestHandler;
     Usb.Events.OnReady = OnUsbReady;
+    Usb.Events.OnDataOUT[EP_BULK_OUT_INDX] = OnDataOUT;
     // Queues
     chIQInit(&UsbOutQueue, OutQBuf, CDC_OUTQ_SZ, nullptr, NULL);
     Usb.PEpBulkOut->POutQueue = &UsbOutQueue;
@@ -115,10 +123,40 @@ void UsbUart_t::Init() {
     Usb.PEpBulkOut->StartOutTransaction();
 }
 
+#if 1 // ==== Cmd ====
+bool UsbUart_t::CheckNewCmd() {
+    msg_t r;
+    while((r = chIQGetTimeout(&UsbOutQueue, TIME_IMMEDIATE)) >= 0) {
+        if(PCmdWrite->PutChar(r) == pdrNewCmd) {
+            // Switch cmd and return
 
+            return pdrNewCmd;
+        }
+    }
+    return pdrProceed;
+        if(c == '\b') PCmdWrite->DoBackspace();
+        else if((c == '\r') or (c == '\n')) {
+            CompleteCmd();
+            return true;
+        }
+        else PCmdWrite->PutChar(c);
+    }
+}
+
+void UsbUart_t::CompleteCmd() {
+    if(PCmdWrite->IsEmpty()) return;
+    chSysLock();
+    PCmdWrite->Finalize();
+    PCmdRead = PCmdWrite;
+    PCmdWrite = (PCmdWrite == &ICmd[0])? &ICmd[1] : &ICmd[0];
+    PCmdWrite->Cnt = 0;
+    chSysUnlock();
+    App.SignalNewCmd();
+}
+#endif
+
+#if 1 // ==== Printf ====
 static inline void FPutChar(char c) { chOQPut(&UsbUart.UsbInQueue, c); }
-
-uint8_t dummybuf[9] = {'\r', 'a','b','c','d','e',7,8,9};
 
 void UsbUart_t::Printf(const char *format, ...) {
     va_list args;
@@ -126,6 +164,6 @@ void UsbUart_t::Printf(const char *format, ...) {
     kl_vsprintf(FPutChar, CDC_INQ_SZ, format, args);
     va_end(args);
     // Start transmission
-//    Usb.PEpBulkIn->StartTransmitBuf(dummybuf, 4);
     Usb.PEpBulkIn->StartTransmitQueue(&UsbInQueue);
 }
+#endif

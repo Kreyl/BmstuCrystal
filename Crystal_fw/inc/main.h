@@ -43,6 +43,9 @@ public:
     Thread *PThread;
     void Init();
     void SignalAdcRsltReady() { chEvtSignalI(PThread, EVTMSK_ADC_READY); }
+    void SignalUsbDataOut()   { chEvtSignalI(PThread, EVTMSK_USB_DATA_OUT); }
+    // Events
+    void OnUartCmd();
     // Inner use
     void ITask();
     void IIrqHandler();

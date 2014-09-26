@@ -109,7 +109,7 @@ struct UsbEvents_t {
     ftVoidVoid OnWakeup;
     ftVoidVoid OnSuspend;
     ftCtrlPkt  OnCtrlPkt;
-    ftVoidVoid OnTransactionEnd[EP_CNT];
+    ftVoidVoid OnDataOUT[EP_CNT];
 };
 
 class Usb_t {

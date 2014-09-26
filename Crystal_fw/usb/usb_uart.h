@@ -9,14 +9,21 @@
 #define USB_SERIAL_H_
 
 #include "usb_f4.h"
+#include "cmd.h"
 
 #define CDC_OUTQ_SZ     256
 #define CDC_INQ_SZ      256
+
+// Cmd related
+#define CDC_CMD_BUF_SZ  54 // payload bytes
+typedef Cmd_t<CDC_CMD_BUF_SZ> UsbCmd_t;
 
 class UsbUart_t {
 private:
     uint8_t OutQBuf[CDC_OUTQ_SZ], InQBuf[CDC_INQ_SZ];
     InputQueue UsbOutQueue; // From chibios' point of view, OUT data is input
+    UsbCmd_t ICmd[2], *PCmdWrite = &ICmd[0];
+    void CompleteCmd();
 public:
     OutputQueue UsbInQueue; // From chibios' point of view, IN data is output
     void Init();
@@ -32,7 +39,10 @@ public:
         }
         else return FAILURE;
     }
+    UsbCmd_t *PCmdRead = &ICmd[1];
+    void Ack(int32_t Result) { Printf("#Ack %d\r\n", Result); }
     void Printf(const char *format, ...);
+    ProcessDataResult_t ProcessOutData();
 };
 
 extern UsbUart_t UsbUart;

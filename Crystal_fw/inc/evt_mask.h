@@ -10,6 +10,8 @@
 
 // Event masks
 #define EVTMSK_ADC_READY        EVENT_MASK(1)
+#define EVTMSK_USB_DATA_OUT     EVENT_MASK(2)
 #define EVTMSK_USB_READY        EVENT_MASK(10)
+
 
 #endif /* EVT_MASK_H_ */

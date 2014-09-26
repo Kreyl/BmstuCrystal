@@ -70,23 +70,24 @@ void App_t::Init() {
 }
 
 void App_t::ITask() {
-    chThdSleepMilliseconds(999);
-    UsbUart.Printf("\r2345678901234567890123456789012345678901234567890123456789012345");
+    uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
+    if(EvtMsk & EVTMSK_ADC_READY) {
+//        y[0] = Adc.Rslt;
+//        AddNewX(Adc.Rslt);
 
-//    uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
-//    if(EvtMsk & EVTMSK_ADC_READY) {
-////        y[0] = Adc.Rslt;
-////        AddNewX(Adc.Rslt);
-//
-////        LED_YELLOW_ON();
-//        //CalculateNewY();
-////        DummyY = Adc.Rslt / 2;
-//    }
-//
-//    if(EvtMsk & EVTMSK_USB_READY) {
-//        Uart.Printf("\rUsbReady");
-//        LED_GREEN_ON();
-//    }
+//        LED_YELLOW_ON();
+        //CalculateNewY();
+//        DummyY = Adc.Rslt / 2;
+    }
+
+    if(EvtMsk & EVTMSK_USB_READY) {
+        Uart.Printf("\rUsbReady");
+        LED_GREEN_ON();
+    }
+
+    if(EvtMsk & EVTMSK_USB_DATA_OUT) {
+        while(UsbUart.ProcessOutData() == pdrNewCmd) OnUartCmd();
+    }
 }
 
 void App_t::AddNewX(int32_t NewX) {
@@ -94,6 +95,28 @@ void App_t::AddNewX(int32_t NewX) {
     xIndx++;
     if(xIndx >= MAX_X_CNT) xIndx = 0;
 }
+
+#if 1 // ======================= Command processing ============================
+void App_t::OnUartCmd() {
+    UsbCmd_t *PCmd = UsbUart.PCmdRead;
+    Uart.Printf("%S\r", PCmd->Name);
+    uint8_t b __attribute__((unused));
+    uint32_t dw32 __attribute__((unused));  // May be unused in some cofigurations
+    if(PCmd->NameIs("#Ping")) UsbUart.Ack(OK);
+
+#if 0 // ==== ID & Type ====
+    else if(PCmd->NameIs("#SetID")) {
+        if(PCmd->TryConvertTokenToNumber(&dw32) == OK) {  // Next token is number
+            b = ISetID(dw32);
+            Mesh.UpdateSleepTime();
+            Uart.Ack(b);
+        }
+        else Uart.Ack(CMD_ERROR);
+    }
+    else if(PCmd->NameIs("#GetID")) Uart.Printf("#ID %u\r\n", SelfID);
+#endif
+}
+#endif
 
 #if 1 // ============================= IRQ =====================================
 // Sampling IRQ: output y0 and start new measurement. ADC will inform app when completed.
