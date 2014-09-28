@@ -10,16 +10,31 @@
 
 #include "cmd_uart.h"
 
+class Filter_t {
+public:
+    bool Running = true;
+    int32_t Sz = 1;
+    void Stop() {
+        Running = false;
+        Reset();
+    }
+    void Start() { Running = true; }
+    virtual void Reset();
+};
+
 #if 1 // ============================ FIR int ==================================
 #define FIR_MAX_SZ  10
-class FirInt_t {
+class FirInt_t : public Filter_t {
 private:
-
 public:
-    int32_t Sz = 1;
+    // Settins
     int32_t Divider = 1024;
-    int32_t a[FIR_MAX_SZ] = { 1024 };
-    void PrintState() {  // for debug purposes
+    int32_t a[FIR_MAX_SZ] = { a[0] = 1024 };
+    // Commands
+    void Reset() {
+    }
+    // For debug purposes
+    void PrintState() {
         Uart.Printf("\rSz=%d; Div=%d;\r", Sz, Divider);
         for(int32_t i=0; i<Sz; i++) Uart.Printf("a%d=%d ", i, a[i]);
 //        for(uint32_t i=0; i<Sz; i++) Uart.Printf("x%d=%d ", i, a[i]);

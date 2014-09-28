@@ -22,7 +22,7 @@ void Dac_t::Init() {
     CskHi();
 
     // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=f/2
-    ISpi.Setup(DAC_SPI, boMSB, cpolIdleLow, cphaSecondEdge, sbFdiv2);
+    ISpi.Setup(DAC_SPI, boMSB, cpolIdleLow, cphaSecondEdge, sbFdiv4);
     ISpi.Enable();
 //    ISpi.SetModeTxOnly();
 //    ISpi.EnableTxDma();

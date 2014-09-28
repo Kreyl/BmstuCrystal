@@ -28,6 +28,8 @@ void Timer_t::Init(TIM_TypeDef* Tmr) {
     // Clock src
     if(ANY_OF_5(ITmr, TIM1, TIM8, TIM9, TIM10, TIM11)) PClk = &Clk.APB2FreqHz;
     else PClk = &Clk.APB1FreqHz;
+    // ARR preload enable
+    ITmr->CR1 |= TIM_CR1_ARPE;
 }
 
 void Timer_t::PwmInit(GPIO_TypeDef *GPIO, uint16_t N, uint8_t Chnl, Inverted_t Inverted) {

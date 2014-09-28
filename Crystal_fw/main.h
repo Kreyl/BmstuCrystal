@@ -37,10 +37,11 @@ class App_t {
 private:
     Timer_t SamplingTmr;
     int32_t x[MAX_X_CNT], xIndx;
-    int32_t y[MAX_Y_CNT], *pyWrite, *pyRead;
+    uint16_t DacOutput;
     void AddNewX(int32_t NewX);
     void CalculateNewY();
     FirInt_t Fir;
+    Filter_t *PFilterCurr = &Fir;
 public:
     Thread *PThread;
     void Init();

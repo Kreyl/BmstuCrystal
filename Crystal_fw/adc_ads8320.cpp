@@ -23,10 +23,10 @@ void Adc_t::Init() {
     PinSetupAlterFunc(ADC_GPIO, ADC_MISO, omPushPull, pudNone, AF5);
     CskHi();
     // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=...
-    ISpi.Setup(ADC_SPI, boMSB, cpolIdleLow, cphaFirstEdge, sbFdiv8);
+    // Select baudrate (2MHz max): APB=24MHz => div = 12
+    ISpi.Setup(ADC_SPI, boMSB, cpolIdleLow, cphaFirstEdge, sbFdiv16);
     ISpi.SetModeRxOnly();
     ISpi.EnableRxDma();
-
     // ==== DMA ====
     dmaStreamAllocate     (ADC_DMA, IRQ_PRIO_MEDIUM, SIrqDmaHandler, NULL);
     dmaStreamSetPeripheral(ADC_DMA, &ADC_SPI->DR);

@@ -25,6 +25,7 @@ int main(void) {
     // 8 MHz/4 = 2; 2*192 = 384; 384/8 = 48 (preAHB divider); 384/8 = 48 (USB clock)
     Clk.SetupPLLDividers(4, 192, pllSysDiv8, 8);
     // 48/1 = 48 MHz core clock. APB1 & APB2 clock derive on AHB clock; APB1max = 30MHz, APB2max = 60MHz
+    // Keep APB freq at 24 MHz to left peripheral settings untouched
     Clk.SetupBusDividers(ahbDiv1, apbDiv2, apbDiv2);
     if((ClkResult = Clk.SwitchToPLL()) == 0) Clk.HSIDisable();
     Clk.UpdateFreqValues();
@@ -34,15 +35,15 @@ int main(void) {
     chSysInit();
 
     // ==== Init hardware ====
-//    Adc.Init();
-//    Dac.Init();
+    Adc.Init();
+    Dac.Init();
     // Leds
-//    PinSetupOut(LEDS_GPIO, LED_YELLOW_PIN, omPushPull);
-//    PinSetupOut(LEDS_GPIO, LED_GREEN_PIN, omPushPull);
-//    PinSetupOut(LEDS_GPIO, LED_RED_PIN, omPushPull);
+    PinSetupOut(LEDS_GPIO, LED_YELLOW_PIN, omPushPull);
+    PinSetupOut(LEDS_GPIO, LED_GREEN_PIN, omPushPull);
+    PinSetupOut(LEDS_GPIO, LED_RED_PIN, omPushPull);
 
-    Uart.Init(256000);
-    Uart.Printf("\rCrystal AHB=%uMHz", Clk.AHBFreqHz/1000000);
+    Uart.Init(115200);
+    Uart.Printf("\rCrystal AHB=%uMHz APB=%uMHz", Clk.AHBFreqHz/1000000, Clk.APB1FreqHz/1000000);
 
     App.Init();
 
@@ -59,15 +60,16 @@ int main(void) {
 void App_t::Init() {
     PThread = chThdSelf();
     // Filters init
-//    Fir.Sz =
-//    Fir.a[0] = 1;
     // ==== Sampling timer ====
-//    SamplingTmr.Init(TIM2);
-//    SamplingTmr.SetUpdateFrequency(1000); // Start Fsmpl value
-//    SamplingTmr.EnableIrq(TIM2_IRQn, IRQ_PRIO_MEDIUM);
-//    SamplingTmr.EnableIrqOnUpdate();
-////    SamplingTmr.Enable(); // DEBUG
-//    // ==== Variables ====
+    SamplingTmr.Init(TIM2);
+    SamplingTmr.SetUpdateFrequency(1000); // Start Fsmpl value
+
+    Uart.Printf("\rarr=%u", TIM2->ARR);
+
+    SamplingTmr.EnableIrq(TIM2_IRQn, IRQ_PRIO_MEDIUM);
+    SamplingTmr.EnableIrqOnUpdate();
+    SamplingTmr.Enable();
+    // ==== Variables ====
 //    pyWrite = y;
 //    pyRead = y;
 }
@@ -75,7 +77,7 @@ void App_t::Init() {
 void App_t::ITask() {
     uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
     if(EvtMsk & EVTMSK_ADC_READY) {
-//        y[0] = Adc.Rslt;
+        DacOutput = Adc.Rslt;
 //        AddNewX(Adc.Rslt);
 
 //        LED_YELLOW_ON();
@@ -108,8 +110,14 @@ void App_t::OnUartCmd() {
     // Handle command
     if(PCmd->NameIs("#Ping")) UsbUart.Ack(OK);
 
+#if 1 // ==== Common ====
+    else if(PCmd->NameIs("#Start")) { PFilterCurr->Start(); UsbUart.Ack(OK); }
+    else if(PCmd->NameIs("#Stop"))  { PFilterCurr->Stop();  UsbUart.Ack(OK); }
+#endif
+
 #if 1 // ==== Int FIR ====
     else if(PCmd->NameIs("#SetFirInt")) {
+        Fir.Stop();
         Fir.Sz = 0;
         // Mandatory params
         if(PCmd->TryConvertTokenToNumber(&Fir.Divider) != OK) { UsbUart.Ack(CMD_ERROR); return; }
@@ -121,6 +129,7 @@ void App_t::OnUartCmd() {
             else break;
         }
         UsbUart.Ack(OK);
+        Fir.Start();
         Fir.PrintState();
     }
 
@@ -133,7 +142,7 @@ void App_t::OnUartCmd() {
 // Sampling IRQ: output y0 and start new measurement. ADC will inform app when completed.
 void App_t::IIrqHandler() {
     Adc.StartDMAMeasure();
-    Dac.Set(y[0]);
+    Dac.Set(DacOutput);
 }
 
 #if 1 // ==== Sampling Timer =====
