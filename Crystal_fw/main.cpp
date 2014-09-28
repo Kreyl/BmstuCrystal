@@ -58,6 +58,9 @@ int main(void) {
 
 void App_t::Init() {
     PThread = chThdSelf();
+    // Filters init
+//    Fir.Sz =
+//    Fir.a[0] = 1;
     // ==== Sampling timer ====
 //    SamplingTmr.Init(TIM2);
 //    SamplingTmr.SetUpdateFrequency(1000); // Start Fsmpl value
@@ -100,22 +103,29 @@ void App_t::AddNewX(int32_t NewX) {
 void App_t::OnUartCmd() {
     UsbCmd_t *PCmd = UsbUart.PCmd;
     uint8_t b __attribute__((unused));
-    uint32_t dw32 __attribute__((unused));  // May be unused in some cofigurations
-    Uart.Printf("%S\r", PCmd->Name);
+    int32_t dw32 __attribute__((unused));  // May be unused in some configurations
+    Uart.Printf("\r%S", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("#Ping")) UsbUart.Ack(OK);
 
-#if 0 // ==== ID & Type ====
-    else if(PCmd->NameIs("#SetID")) {
-        if(PCmd->TryConvertTokenToNumber(&dw32) == OK) {  // Next token is number
-            b = ISetID(dw32);
-            Mesh.UpdateSleepTime();
-            Uart.Ack(b);
+#if 1 // ==== Int FIR ====
+    else if(PCmd->NameIs("#SetFirInt")) {
+        Fir.Sz = 0;
+        // Mandatory params
+        if(PCmd->TryConvertTokenToNumber(&Fir.Divider) != OK) { UsbUart.Ack(CMD_ERROR); return; }
+        if(PCmd->TryConvertTokenToNumber(&Fir.a[0])    != OK) { UsbUart.Ack(CMD_ERROR); return; }
+        Fir.Sz = 1;
+        // Optional other coefs
+        for(uint32_t i=1; i<FIR_MAX_SZ; i++) {
+            if(PCmd->TryConvertTokenToNumber(&Fir.a[i]) == OK) Fir.Sz++;
+            else break;
         }
-        else Uart.Ack(CMD_ERROR);
+        UsbUart.Ack(OK);
+        Fir.PrintState();
     }
-    else if(PCmd->NameIs("#GetID")) Uart.Printf("#ID %u\r\n", SelfID);
+
 #endif
+    else if(*PCmd->Name == '#') UsbUart.Ack(CMD_UNKNOWN);  // reply only #-started stuff
 }
 #endif
 

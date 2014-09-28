@@ -30,8 +30,7 @@ public:
         if(c == '\b') { if(Cnt > 0) Cnt--; }    // do backspace
         else if((c == '\r') or (c == '\n')) {   // end of line, check if cmd completed
             if(Cnt != 0) {  // if cmd is not empty
-                // Finalize cmd
-                for(uint32_t i=Cnt; i < BufSz; i++) IString[i] = 0;
+                IString[Cnt] = 0; // End of string
                 Name = strtok(IString, DELIMITERS);
                 GetNextToken();
                 return pdrNewCmd;
@@ -45,8 +44,11 @@ public:
         return (*Token == '\0')? FAILURE : OK;
     }
     void Reset() { Cnt = 0; }
-    uint8_t TryConvertTokenToNumber(uint32_t *POutput) { return Convert::TryStrToUInt32(Token, POutput); }
-    uint8_t TryConvertTokenToNumber( int32_t *POutput) { return Convert::TryStrToInt32(Token, POutput); }
+    uint8_t TryConvertTokenToNumber( int32_t *POutput) {
+        uint8_t rslt = Convert::TryStrToInt32(Token, POutput);
+        GetNextToken();
+        return rslt;
+    }
     bool NameIs(const char *SCmd) { return (strcasecmp(Name, SCmd) == 0); }
 };
 

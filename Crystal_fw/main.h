@@ -14,6 +14,7 @@
 #include "dac8531.h"
 #include "cmd_uart.h"
 #include "evt_mask.h"
+#include "filter.h"
 
 #if 1 // ==== Leds ====
 #define LEDS_GPIO           GPIOC
@@ -39,6 +40,7 @@ private:
     int32_t y[MAX_Y_CNT], *pyWrite, *pyRead;
     void AddNewX(int32_t NewX);
     void CalculateNewY();
+    FirInt_t Fir;
 public:
     Thread *PThread;
     void Init();
