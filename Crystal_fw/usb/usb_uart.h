@@ -23,7 +23,6 @@ private:
     uint8_t OutQBuf[CDC_OUTQ_SZ], InQBuf[CDC_INQ_SZ];
     InputQueue UsbOutQueue; // From chibios' point of view, OUT data is input
     UsbCmd_t ICmd[2], *PCmdWrite = &ICmd[0];
-    void CompleteCmd();
 public:
     OutputQueue UsbInQueue; // From chibios' point of view, IN data is output
     void Init();
@@ -39,7 +38,7 @@ public:
         }
         else return FAILURE;
     }
-    UsbCmd_t *PCmdRead = &ICmd[1];
+    UsbCmd_t *PCmd = &ICmd[1];
     void Ack(int32_t Result) { Printf("#Ack %d\r\n", Result); }
     void Printf(const char *format, ...);
     ProcessDataResult_t ProcessOutData();

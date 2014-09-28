@@ -124,34 +124,23 @@ void UsbUart_t::Init() {
 }
 
 #if 1 // ==== Cmd ====
-bool UsbUart_t::CheckNewCmd() {
-    msg_t r;
-    while((r = chIQGetTimeout(&UsbOutQueue, TIME_IMMEDIATE)) >= 0) {
-        if(PCmdWrite->PutChar(r) == pdrNewCmd) {
-            // Switch cmd and return
-
-            return pdrNewCmd;
-        }
+ProcessDataResult_t UsbUart_t::ProcessOutData() {
+    while(true) {
+        msg_t r = chIQGetTimeout(&UsbOutQueue, TIME_IMMEDIATE);
+        if(r >= 0) {
+            if(PCmdWrite->PutChar(r) == pdrNewCmd) {
+                // Switch cmd and return NewCmd
+                chSysLock();
+                PCmd = PCmdWrite;
+                PCmdWrite = (PCmdWrite == &ICmd[0])? &ICmd[1] : &ICmd[0];
+                PCmdWrite->Reset();
+                chSysUnlock();
+                return pdrNewCmd;
+            } // if put char
+        } // if r > 0
+        else break; // Queue become empty or inoperable
     }
     return pdrProceed;
-        if(c == '\b') PCmdWrite->DoBackspace();
-        else if((c == '\r') or (c == '\n')) {
-            CompleteCmd();
-            return true;
-        }
-        else PCmdWrite->PutChar(c);
-    }
-}
-
-void UsbUart_t::CompleteCmd() {
-    if(PCmdWrite->IsEmpty()) return;
-    chSysLock();
-    PCmdWrite->Finalize();
-    PCmdRead = PCmdWrite;
-    PCmdWrite = (PCmdWrite == &ICmd[0])? &ICmd[1] : &ICmd[0];
-    PCmdWrite->Cnt = 0;
-    chSysUnlock();
-    App.SignalNewCmd();
 }
 #endif
 

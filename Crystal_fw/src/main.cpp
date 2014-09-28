@@ -98,10 +98,11 @@ void App_t::AddNewX(int32_t NewX) {
 
 #if 1 // ======================= Command processing ============================
 void App_t::OnUartCmd() {
-    UsbCmd_t *PCmd = UsbUart.PCmdRead;
-    Uart.Printf("%S\r", PCmd->Name);
+    UsbCmd_t *PCmd = UsbUart.PCmd;
     uint8_t b __attribute__((unused));
     uint32_t dw32 __attribute__((unused));  // May be unused in some cofigurations
+    Uart.Printf("%S\r", PCmd->Name);
+    // Handle command
     if(PCmd->NameIs("#Ping")) UsbUart.Ack(OK);
 
 #if 0 // ==== ID & Type ====
