@@ -63,9 +63,6 @@ void App_t::Init() {
     // ==== Sampling timer ====
     SamplingTmr.Init(TIM2);
     SamplingTmr.SetUpdateFrequency(1000); // Start Fsmpl value
-
-    Uart.Printf("\rarr=%u", TIM2->ARR);
-
     SamplingTmr.EnableIrq(TIM2_IRQn, IRQ_PRIO_MEDIUM);
     SamplingTmr.EnableIrqOnUpdate();
     SamplingTmr.Enable();
@@ -104,13 +101,18 @@ void App_t::AddNewX(int32_t NewX) {
 #if 1 // ======================= Command processing ============================
 void App_t::OnUartCmd() {
     UsbCmd_t *PCmd = UsbUart.PCmd;
-    uint8_t b __attribute__((unused));
     int32_t dw32 __attribute__((unused));  // May be unused in some configurations
     Uart.Printf("\r%S", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("#Ping")) UsbUart.Ack(OK);
 
 #if 1 // ==== Common ====
+    else if(PCmd->NameIs("#SetSmplFreq")) {
+        if(PCmd->TryConvertTokenToNumber(&dw32) != OK) { UsbUart.Ack(CMD_ERROR); return; }
+        SamplingTmr.SetUpdateFrequency(dw32);
+        UsbUart.Ack(OK);
+    }
+
     else if(PCmd->NameIs("#Start")) { PFilterCurr->Start(); UsbUart.Ack(OK); }
     else if(PCmd->NameIs("#Stop"))  { PFilterCurr->Stop();  UsbUart.Ack(OK); }
 #endif

@@ -352,7 +352,7 @@ enum Inverted_t {invNotInverted, invInverted};
 class Timer_t {
 private:
     TIM_TypeDef* ITmr;
-    uint32_t *PClk;
+    uint32_t *PClk, Multiplier;
 public:
     __IO uint32_t *PCCR;    // Made public to allow DMA
     // Common
@@ -360,10 +360,13 @@ public:
     void Deinit();
     inline void Enable()  { ITmr->CR1 |=  TIM_CR1_CEN; }
     inline void Disable() { ITmr->CR1 &= ~TIM_CR1_CEN; }
-    inline void SetUpdateFrequency(uint32_t FreqHz) { SetTopValue(*PClk / FreqHz); }
+    inline void SetUpdateFrequency(uint32_t FreqHz) {
+        SetTopValue((*PClk * Multiplier) / FreqHz);
+        ITmr->CNT = 0;  // Reset counter to start from scratch
+    }
     inline void SetTopValue(uint16_t Value) { ITmr->ARR = Value; }
     inline uint16_t GetTopValue() { return ITmr->ARR; }
-    inline void SetupPrescaler(uint32_t PrescaledFreqHz) { ITmr->PSC = (*PClk / PrescaledFreqHz) - 1; }
+    inline void SetupPrescaler(uint32_t PrescaledFreqHz) { ITmr->PSC = ((*PClk * Multiplier) / PrescaledFreqHz) - 1; }
     inline void SetPrescaler(uint16_t AValue) { ITmr->PSC = AValue; }
     inline void SetCounter(uint16_t Value) { ITmr->CNT = Value; }
     inline uint16_t GetCounter() { return ITmr->CNT; }

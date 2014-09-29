@@ -1,0 +1,49 @@
+# Terminal macro file v2
+Ping
+##Ping#010#013
+Start
+##Start#010#013
+Stop
+##Stop#010#013
+
+
+SF1k
+##SetSmplFreq 1000#010#013
+SF2k
+##SetSmplFreq 2000#010#013
+SF10k
+##SetSmplFreq 10000#010#013
+SF20k
+##SetSmplFreq 20000#010#013
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

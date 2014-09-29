@@ -26,10 +26,28 @@ void Timer_t::Init(TIM_TypeDef* Tmr) {
     else if(ITmr == TIM13) { rccEnableAPB1(RCC_APB1ENR_TIM13EN, FALSE); }
     else if(ITmr == TIM14) { rccEnableAPB1(RCC_APB1ENR_TIM14EN, FALSE); }
     // Clock src
-    if(ANY_OF_5(ITmr, TIM1, TIM8, TIM9, TIM10, TIM11)) PClk = &Clk.APB2FreqHz;
-    else PClk = &Clk.APB1FreqHz;
-    // ARR preload enable
-    ITmr->CR1 |= TIM_CR1_ARPE;
+    uint32_t APBDiv;
+    if(ANY_OF_5(ITmr, TIM1, TIM8, TIM9, TIM10, TIM11)) {
+        PClk = &Clk.APB2FreqHz;
+        APBDiv = (RCC->CFGR & RCC_CFGR_PPRE2) >> 13;
+    }
+    else {
+        PClk = &Clk.APB1FreqHz;
+        APBDiv = (RCC->CFGR & RCC_CFGR_PPRE1) >> 10;
+    }
+    // Multiplier
+    if(RCC->DCKCFGR & RCC_DCKCFGR_TIMPRE) {
+        if(APBDiv == 0b110 or APBDiv == 0b111) { // Apb div == 8 or 16
+            Multiplier = 4; // TimClk = 4*APB
+        }
+        else { // Apb div == 1, 2, 4
+            PClk = &Clk.AHBFreqHz;  // TimClk = HCLK
+            Multiplier = 1;
+        }
+    }
+    else { // TIMPRE == 0
+        Multiplier = (APBDiv == 0)? 1 : 2;  // if APB divider==1 (bits==0), TimClk=APB; else TimClk= 2*APB
+    }
 }
 
 void Timer_t::PwmInit(GPIO_TypeDef *GPIO, uint16_t N, uint8_t Chnl, Inverted_t Inverted) {
