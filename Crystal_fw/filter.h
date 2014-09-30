@@ -35,9 +35,9 @@ public:
     int32_t Divider = 1024;
     int32_t a[FIR_MAX_SZ] = { a[0] = 1024 };
     // Commands
-    void Reset() {
-    }
+    void Reset() { for(int i=0; i<FIR_MAX_SZ; i++) x[i] = 0; }
     int32_t AddXAndCalculate(int32_t x0) {
+        if(!Running) return 0;
         int32_t rslt = x0 * a[0];
         if(Sz > 1) {
             int IndxR = IndxW;
