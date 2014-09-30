@@ -21,11 +21,11 @@ int main(void) {
     // ==== Setup clock frequency ====
     Clk.UpdateFreqValues();
     uint8_t ClkResult = 1;
-    Clk.SetupFlashLatency(48);  // Setup Flash Latency for clock in MHz
-    // 8 MHz/4 = 2; 2*192 = 384; 384/8 = 48 (preAHB divider); 384/8 = 48 (USB clock)
-    Clk.SetupPLLDividers(4, 192, pllSysDiv8, 8);
-    // 48/1 = 48 MHz core clock. APB1 & APB2 clock derive on AHB clock; APB1max = 30MHz, APB2max = 60MHz
-    // Keep APB freq at 24 MHz to left peripheral settings untouched
+    Clk.SetupFlashLatency(64);  // Setup Flash Latency for clock in MHz
+    // 8 MHz/4 = 2; 2*192 = 384; 384/6 = 64 (preAHB divider); 384/8 = 48 (USB clock)
+    Clk.SetupPLLDividers(4, 192, pllSysDiv6, 8);
+    // 64/1 = 64 MHz core clock. APB1 & APB2 clock derive on AHB clock; APB1max = 42MHz, APB2max = 84MHz
+    // Keep APB freq at 32 MHz to left peripheral settings untouched
     Clk.SetupBusDividers(ahbDiv1, apbDiv2, apbDiv2);
     if((ClkResult = Clk.SwitchToPLL()) == 0) Clk.HSIDisable();
     Clk.UpdateFreqValues();
@@ -59,11 +59,14 @@ int main(void) {
 
 void App_t::Init() {
     PThread = chThdSelf();
-    // Filters init
+    // ==== Analog switch ====
+    PinSetupOut(GPIOC, ADG_IN1_PIN, omPushPull, pudNone);
+    PinSetupOut(GPIOC, ADG_IN2_PIN, omPushPull, pudNone);
+    OutputFilterOff();
     // ==== Sampling timer ====
     SamplingTmr.Init(TIM2);
-    SamplingTmr.SetUpdateFrequency(1000); // Start Fsmpl value
-    SamplingTmr.EnableIrq(TIM2_IRQn, IRQ_PRIO_MEDIUM);
+    SamplingTmr.SetUpdateFrequency(10000); // Start Fsmpl value
+    SamplingTmr.EnableIrq(TIM2_IRQn, IRQ_PRIO_HIGH);
     SamplingTmr.EnableIrqOnUpdate();
     SamplingTmr.Enable();
     // ==== Variables ====
@@ -74,12 +77,22 @@ void App_t::Init() {
 void App_t::ITask() {
     uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
     if(EvtMsk & EVTMSK_ADC_READY) {
-        DacOutput = Adc.Rslt;
-//        AddNewX(Adc.Rslt);
-
-//        LED_YELLOW_ON();
-        //CalculateNewY();
-//        DummyY = Adc.Rslt / 2;
+        LED_YELLOW_ON();
+        // ==== Remove DC from input ====
+//        DacOutput = Adc.Rslt; // DEBUG
+        static int32_t x1 = 0, y1=0;
+        int32_t x0 = Adc.Rslt;
+        int32_t y0 = x0 - 32768;
+        y0 = x0 - x1 + ((9990 * y1) / 10000);
+        x1 = x0;
+        y1 = y0;
+        y0 = -y0;
+        // ==== Filter ====
+        y0 = PCurrentFilter->AddXAndCalculate(y0);
+        // ==== Output received value ====
+        DacOutput = 32768 + y0;
+        LED_YELLOW_OFF();
+        LED_RED_OFF();
     }
 
     if(EvtMsk & EVTMSK_USB_READY) {
@@ -90,12 +103,6 @@ void App_t::ITask() {
     if(EvtMsk & EVTMSK_USB_DATA_OUT) {
         while(UsbUart.ProcessOutData() == pdrNewCmd) OnUartCmd();
     }
-}
-
-void App_t::AddNewX(int32_t NewX) {
-    x[xIndx] = NewX;
-    xIndx++;
-    if(xIndx >= MAX_X_CNT) xIndx = 0;
 }
 
 #if 1 // ======================= Command processing ============================
@@ -113,8 +120,13 @@ void App_t::OnUartCmd() {
         UsbUart.Ack(OK);
     }
 
-    else if(PCmd->NameIs("#Start")) { PFilterCurr->Start(); UsbUart.Ack(OK); }
-    else if(PCmd->NameIs("#Stop"))  { PFilterCurr->Stop();  UsbUart.Ack(OK); }
+    // Output analog filter
+    else if(PCmd->NameIs("#OutFilterOn"))  { OutputFilterOn();  UsbUart.Ack(OK); }
+    else if(PCmd->NameIs("#OutFilterOff")) { OutputFilterOff(); UsbUart.Ack(OK); }
+
+    // Stat/Stop
+    else if(PCmd->NameIs("#Start")) { PCurrentFilter->Start(); UsbUart.Ack(OK); }
+    else if(PCmd->NameIs("#Stop"))  { PCurrentFilter->Stop();  UsbUart.Ack(OK); }
 #endif
 
 #if 1 // ==== Int FIR ====
@@ -145,6 +157,7 @@ void App_t::OnUartCmd() {
 void App_t::IIrqHandler() {
     Adc.StartDMAMeasure();
     Dac.Set(DacOutput);
+    LED_RED_ON();
 }
 
 #if 1 // ==== Sampling Timer =====

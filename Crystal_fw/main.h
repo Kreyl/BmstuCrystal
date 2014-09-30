@@ -22,26 +22,30 @@
 #define LED_GREEN_PIN       6
 #define LED_RED_PIN         8
 
-#define LED_YELLOW_ON()     PinSet(LEDS_GPIO, LED_YELLOW_PIN)
+#define LED_YELLOW_ON()     PinSet  (LEDS_GPIO, LED_YELLOW_PIN)
 #define LED_YELLOW_OFF()    PinClear(LEDS_GPIO, LED_YELLOW_PIN)
-#define LED_GREEN_ON()      PinSet(LEDS_GPIO, LED_GREEN_PIN)
+#define LED_GREEN_ON()      PinSet  (LEDS_GPIO, LED_GREEN_PIN)
 #define LED_GREEN_OFF()     PinClear(LEDS_GPIO, LED_GREEN_PIN)
-#define LED_RED_ON()        PinSet(LEDS_GPIO, LED_RED_PIN)
+#define LED_RED_ON()        PinSet  (LEDS_GPIO, LED_RED_PIN)
 #define LED_RED_OFF()       PinClear(LEDS_GPIO, LED_RED_PIN)
 #endif
 
-#define MAX_X_CNT   11
-#define MAX_Y_CNT   11
+#define MAX_X_CNT           11
+#define MAX_Y_CNT           11
+
+// Analog switch
+#define ADG_IN1_PIN         0
+#define ADG_IN2_PIN         1
 
 class App_t {
 private:
     Timer_t SamplingTmr;
-    int32_t x[MAX_X_CNT], xIndx;
-    uint16_t DacOutput;
-    void AddNewX(int32_t NewX);
-    void CalculateNewY();
+    int32_t DacOutput;
     FirInt_t Fir;
-    Filter_t *PFilterCurr = &Fir;
+    Filter_t *PCurrentFilter = &Fir;
+    // Output switch
+    void OutputFilterOn()  { PinClear(GPIOC, ADG_IN1_PIN); PinClear(GPIOC, ADG_IN2_PIN); }
+    void OutputFilterOff() { PinSet  (GPIOC, ADG_IN1_PIN); PinSet  (GPIOC, ADG_IN2_PIN); }
 public:
     Thread *PThread;
     void Init();

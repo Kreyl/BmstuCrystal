@@ -21,8 +21,8 @@ void Dac_t::Init() {
     PinSetupAlterFunc(DAC_GPIO, DAC_MOSI, omPushPull, pudNone, AF5);
     CskHi();
 
-    // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=f/2
-    ISpi.Setup(DAC_SPI, boMSB, cpolIdleLow, cphaSecondEdge, sbFdiv4);
+    // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=f/2 (SPI Freq supported up to 30 MHz)
+    ISpi.Setup(DAC_SPI, boMSB, cpolIdleLow, cphaSecondEdge, sbFdiv2);
     ISpi.Enable();
 //    ISpi.SetModeTxOnly();
 //    ISpi.EnableTxDma();

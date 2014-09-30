@@ -11,6 +11,8 @@
 #include "cmd_uart.h"
 
 class Filter_t {
+protected:
+    int IndxW = 0;
 public:
     bool Running = true;
     int32_t Sz = 1;
@@ -20,12 +22,14 @@ public:
     }
     void Start() { Running = true; }
     virtual void Reset();
+    virtual int32_t AddXAndCalculate(int32_t x0);
 };
 
 #if 1 // ============================ FIR int ==================================
-#define FIR_MAX_SZ  10
+#define FIR_MAX_SZ  20
 class FirInt_t : public Filter_t {
 private:
+    int32_t x[FIR_MAX_SZ];
 public:
     // Settins
     int32_t Divider = 1024;
@@ -33,6 +37,25 @@ public:
     // Commands
     void Reset() {
     }
+    int32_t AddXAndCalculate(int32_t x0) {
+        int32_t rslt = x0 * a[0];
+        if(Sz > 1) {
+            int IndxR = IndxW;
+            // Calculate filter
+            for(int32_t i=1; i<Sz; i++) {
+                rslt += x[IndxR] * a[i];
+    //            Uart.Printf("x%u=%d; ", R, x[R], i);
+                if(++IndxR >= Sz-1) IndxR = 0;
+            }
+            // Add x0 to buffer
+            if(IndxW == 0) IndxW = Sz - 2;
+            else IndxW--;
+            x[IndxW] = x0;
+        } // if Sz > 1
+//        Uart.Printf("rslt=%d", rslt);
+        return (Divider == 0)? 0 : rslt / Divider;
+    }
+
     // For debug purposes
     void PrintState() {
         Uart.Printf("\rSz=%d; Div=%d;\r", Sz, Divider);

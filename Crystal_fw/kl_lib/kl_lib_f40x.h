@@ -364,12 +364,12 @@ public:
         SetTopValue((*PClk * Multiplier) / FreqHz);
         ITmr->CNT = 0;  // Reset counter to start from scratch
     }
-    inline void SetTopValue(uint16_t Value) { ITmr->ARR = Value; }
-    inline uint16_t GetTopValue() { return ITmr->ARR; }
+    inline void SetTopValue(uint32_t Value) { ITmr->ARR = Value; }
+    inline uint32_t GetTopValue() { return ITmr->ARR; }
     inline void SetupPrescaler(uint32_t PrescaledFreqHz) { ITmr->PSC = ((*PClk * Multiplier) / PrescaledFreqHz) - 1; }
     inline void SetPrescaler(uint16_t AValue) { ITmr->PSC = AValue; }
-    inline void SetCounter(uint16_t Value) { ITmr->CNT = Value; }
-    inline uint16_t GetCounter() { return ITmr->CNT; }
+    inline void SetCounter(uint32_t Value) { ITmr->CNT = Value; }
+    inline uint32_t GetCounter() { return ITmr->CNT; }
     // Master/Slave
     inline void SetTriggerInput(TmrTrigInput_t TrgInput) {
         uint16_t tmp = ITmr->SMCR;
@@ -396,7 +396,7 @@ public:
     void EnableIrq(uint32_t IrqChnl, uint32_t IrqPriority) { nvicEnableVector(IrqChnl, CORTEX_PRIORITY_MASK(IrqPriority)); }
     // PWM
     void PwmInit(GPIO_TypeDef *GPIO, uint16_t N, uint8_t Chnl, Inverted_t Inverted);
-    void PwmSet(uint16_t Value) { *PCCR = Value; }
+    void PwmSet(uint32_t Value) { *PCCR = Value; }
 };
 
 #if 1 // ============================== SPI ====================================

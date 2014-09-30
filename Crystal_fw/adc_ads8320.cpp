@@ -23,7 +23,7 @@ void Adc_t::Init() {
     PinSetupAlterFunc(ADC_GPIO, ADC_MISO, omPushPull, pudNone, AF5);
     CskHi();
     // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=...
-    // Select baudrate (2MHz max): APB=24MHz => div = 12
+    // Select baudrate (2.4MHz max): APB=32MHz => div = 16
     ISpi.Setup(ADC_SPI, boMSB, cpolIdleLow, cphaFirstEdge, sbFdiv16);
     ISpi.SetModeRxOnly();
     ISpi.EnableRxDma();

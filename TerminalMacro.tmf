@@ -15,18 +15,18 @@ SF10k
 ##SetSmplFreq 10000#010#013
 SF20k
 ##SetSmplFreq 20000#010#013
+SF30k
+##SetSmplFreq 30000#010#013
 
 
-
-
-
-
-
-
-
-
-
-
+FltOn
+##OutFilterOn#010#013
+FltOff
+##OutFilterOff#010#013
+/2
+##SetFirInt 4096 2048#010#013
+FirInt
+##SetFirInt 10 -2,-1,0,1,2,3,4,3,2,1,0,-1,-2#010#013
 
 
 
