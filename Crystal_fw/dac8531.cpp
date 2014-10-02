@@ -10,6 +10,8 @@
 
 Dac_t Dac;
 
+// TODO: complete DAC DMA
+
 //extern "C" {
 //// DMA irq
 //void SIrqDmaHandler(void *p, uint32_t flags) { Dac.IrqDmaHandler_DAC(); }

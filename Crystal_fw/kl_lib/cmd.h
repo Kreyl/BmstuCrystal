@@ -46,7 +46,6 @@ public:
     void Reset() { Cnt = 0; }
     uint8_t TryConvertTokenToNumber( int32_t *POutput) {
         uint8_t rslt = Convert::TryStrToInt32(Token, POutput);
-        GetNextToken();
         return rslt;
     }
     bool NameIs(const char *SCmd) { return (strcasecmp(Name, SCmd) == 0); }

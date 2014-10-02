@@ -22,8 +22,6 @@
  * @{
  */
 
-/* TODO: LSEBYP like in F3.*/
-
 #include "ch.h"
 #include "hal.h"
 #include "clocking_f40x.h"
