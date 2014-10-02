@@ -39,11 +39,11 @@ FirInt
 
 
 
-
-
-
-
-
-
-
-
+1 bit
+##SetResolution 1#010#013
+3 bit
+##SetResolution 3#010#013
+8 bit
+##SetResolution 8#010#013
+16 bit
+##SetResolution 16#010#013

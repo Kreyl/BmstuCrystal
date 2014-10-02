@@ -81,7 +81,7 @@ void App_t::ITask() {
         // ==== Remove DC from input ====
 //        DacOutput = Adc.Rslt; // DEBUG
         static int32_t x1 = 0, y1=0;
-        int32_t x0 = Adc.Rslt;
+        int32_t x0 = Adc.Rslt & ResolutionMask;
         int32_t y0 = x0 - 32768;
         y0 = x0 - x1 + ((9990 * y1) / 10000);
         x1 = x0;
@@ -117,6 +117,12 @@ void App_t::OnUartCmd() {
     else if(PCmd->NameIs("#SetSmplFreq")) {
         if(PCmd->TryConvertTokenToNumber(&dw32) != OK) { UsbUart.Ack(CMD_ERROR); return; }
         SamplingTmr.SetUpdateFrequency(dw32);
+        UsbUart.Ack(OK);
+    }
+
+    else if(PCmd->NameIs("#SetResolution")) {
+        if((PCmd->TryConvertTokenToNumber(&dw32) != OK) or (dw32 < 1 or dw32 > 16)) { UsbUart.Ack(CMD_ERROR); return; }
+        ResolutionMask = 0xFFFF << (16 - dw32);
         UsbUart.Ack(OK);
     }
 

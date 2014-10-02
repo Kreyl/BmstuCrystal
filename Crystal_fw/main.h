@@ -40,6 +40,7 @@
 class App_t {
 private:
     Timer_t SamplingTmr;
+    uint16_t ResolutionMask = 0xFFFF;
     int32_t DacOutput;
     FirInt_t Fir;
     Filter_t *PCurrentFilter = &Fir;
