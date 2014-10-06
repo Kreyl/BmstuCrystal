@@ -24,15 +24,15 @@ FltOn
 FltOff
 ##OutFilterOff#010#013
 /2
-##SetFirInt 4096 2048#010#013
+##SetIirInt 100 a50#010#013
 FirInt
-##SetFirInt 10 -2,-1,0,1,2,3,4,3,2,1,0,-1,-2#010#013
-
-
-
-
-
-
+##SetFirInt 10 a0,a1,a2,a3,a4,a3,a2,a1,a0#010#013
+iir dif
+##SetIirInt 10 a10,a-10,b9#010#013
+iir bat
+##SetIirInt 10000 a2065,a4131,a2065,b3695,b-1958#010#013
+iir res
+##SetIirInt 10000 a10000,b5804,b-8819#010#013
 
 
 

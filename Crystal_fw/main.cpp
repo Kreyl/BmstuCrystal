@@ -170,11 +170,10 @@ void App_t::OnUartCmd() {
     else if(PCmd->NameIs("#SetIirInt")) {
         PCurrentFilter->Stop();
         IirInt.Reset();
-        IirInt.SzA = 0;
-        IirInt.SzB = 0; // b[0] acts as b[1]
+        IirInt.ResetCoefs();
         // Mandatory Divider
         if(PCmd->TryConvertTokenToNumber(&IirInt.Divider) != OK) { UsbUart.Ack(CMD_ERROR); return; }
-        // ==== Coeffs ====
+        // ==== Coeffs ==== b[0] acts as b[1]
         // a[0] is mandatory
         if(PCmd->GetNextToken() != OK) { UsbUart.Ack(CMD_ERROR); return; }
         if((PCmd->Token[0] != 'a') or (Convert::TryStrToInt32(&PCmd->Token[1], &IirInt.a[0]) != OK)) { UsbUart.Ack(CMD_ERROR); return; }
