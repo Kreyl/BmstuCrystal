@@ -12,10 +12,10 @@
 #include "cmd.h"
 
 #define CDC_OUTQ_SZ     256
-#define CDC_INQ_SZ      256
+#define CDC_INQ_SZ      2048
 
 // Cmd related
-#define CDC_CMD_BUF_SZ  54 // payload bytes
+#define CDC_CMD_BUF_SZ  1024 // payload bytes
 typedef Cmd_t<CDC_CMD_BUF_SZ> UsbCmd_t;
 
 class UsbUart_t {

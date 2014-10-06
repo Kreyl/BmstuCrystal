@@ -139,7 +139,7 @@ void App_t::OnUartCmd() {
     else if(PCmd->NameIs("#SetFirInt")) {
         PCurrentFilter->Stop();
         FirInt.Reset();
-        FirInt.Sz = 0;
+        FirInt.ResetCoefs();
         // Mandatory Divider
         if(PCmd->TryConvertTokenToNumber(&FirInt.Divider) != OK) { UsbUart.Ack(CMD_ERROR); return; }
         // ==== Coeffs ====

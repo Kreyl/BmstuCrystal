@@ -37,7 +37,6 @@ public:
 class FirInt_t : public Filter_t {
 private:
     int32_t x[FIR_MAX_SZ];
-    int IndxWx = 0;
 public:
     // Settins
     int32_t Sz = 1;
@@ -45,23 +44,21 @@ public:
     int32_t a[FIR_MAX_SZ] = { a[0] = 1024 };
     // Commands
     void Reset() { for(int i=0; i<FIR_MAX_SZ; i++) x[i] = 0; }
+    void ResetCoefs() {
+        Sz=0;
+        for(int i=0; i<FIR_MAX_SZ; i++) a[i] = 0;
+    }
     int32_t AddXAndCalculate(int32_t x0) {
         if(!Running) return 0;
-        int32_t y0 = x0 * a[0];
-        if(Sz > 1) {
-            int IndxR = IndxWx;
-            for(int32_t i=1; i<Sz; i++) {
-                y0 += x[IndxR] * a[i];
-    //            Uart.Printf("x%u=%d; ", R, x[R], i);
-                if(++IndxR >= Sz-1) IndxR = 0;
-            }
-            // Add x0 to buffer
-            if(IndxWx == 0) IndxWx = Sz - 2;
-            else IndxWx--;
-            x[IndxWx] = x0;
-        } // if Sz > 1
-//        Uart.Printf("rslt=%d", rslt);
-        return (Divider == 0)? 0 : y0 / Divider;
+        int32_t y0=0;
+        x[0] = x0;
+        for(int i=Sz-1; i>=1; i--) {
+            y0 = MulAndAcc(x[i], a[i], y0);
+            x[i] = x[i-1];
+        }
+        y0 = MulAndAcc(x[0], a[0], y0);
+        y0 = (Divider == 0)? 0 : y0 / Divider;
+        return y0;
     }
 
     // For debug purposes
@@ -105,17 +102,17 @@ public:
         int32_t y0=0;
         // None-recursive part
         x[0] = x0;
-        y0 = MulAndAcc(x[0], a[0], y0);
-        for(int i=1; i<SzA; i++) {
+        for(int i=SzA-1; i>=1; i--) {
             y0 = MulAndAcc(x[i], a[i], y0);
             x[i] = x[i-1];
         }
+        y0 = MulAndAcc(x[0], a[0], y0);
         // Recursive part
-        y0 = MulAndAcc(y[0], b[0], y0);
-        for(int i=1; i<SzB; i++) {
+        for(int i=SzB-1; i>=1; i--) {
             y0 = MulAndAcc(y[i], b[i], y0);
             y[i] = y[i-1];
         }
+        y0 = MulAndAcc(y[0], b[0], y0);
         // Divide and add y0 to buffer
         y0 = (Divider == 0)? 0 : y0 / Divider;
         y[0] = y0;
