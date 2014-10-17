@@ -35,8 +35,8 @@ int main(void) {
     chSysInit();
 
     // ==== Init hardware ====
-//    Adc.Init();
-//    Dac.Init();
+    Adc.Init();
+    Dac.Init();
 
     // Leds
     PinSetupOut(LEDS_GPIO, LED_YELLOW_PIN, omPushPull);
