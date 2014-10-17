@@ -9,6 +9,7 @@
 #define FILTER_H_
 
 #include "cmd_uart.h"
+//#include "arm_math.h"
 
 #if 1 // ==== DSP instructions ====
 __attribute__((always_inline))
@@ -18,6 +19,13 @@ static inline int32_t MulAndAcc(int32_t op1, int32_t op2, int32_t acc) {
     return rslt;
 }
 
+__attribute__((always_inline))
+static inline float MulAndAccFloat(float op1, float op2, float acc) {
+    float rslt;
+    //asm volatile ("VLMA %0, %1, %2" : "=r" (rslt) : "r" (op1), "r" (op2), "r" (acc));
+    rslt = acc + op1 * op2;
+    return rslt;
+}
 #endif
 
 class Filter_t {
@@ -116,7 +124,6 @@ public:
         // Divide and add y0 to buffer
         y0 = (Divider == 0)? 0 : y0 / Divider;
         y[0] = y0;
-//        Uart.Printf("rslt=%d", rslt);
         return y0;
     }
 
@@ -130,8 +137,41 @@ public:
 };
 #endif
 
+#if 1 // ============================ FIR float ================================
+class FirFloat_t : public Filter_t {
+private:
+    float x[FIR_MAX_SZ];
+public:
+    // Settins
+    int32_t Sz = 4;
+    float a[FIR_MAX_SZ] = { 0.4, 0.3, 0.2, 0.1 };
+    // Commands
+    void Reset() { for(int i=0; i<FIR_MAX_SZ; i++) x[i] = 0; }
+    void ResetCoefs() {
+        Sz=0;
+        for(int i=0; i<FIR_MAX_SZ; i++) a[i] = 0;
+    }
+    int32_t AddXAndCalculate(int32_t x0) {
+        if(!Running) return 0;
+        float y0=0;
+        x[0] = x0;
+        for(int i=Sz-1; i>=1; i--) {
+            y0 = MulAndAccFloat(x[i], a[i], y0);
+            x[i] = x[i-1];
+        }
+        y0 = MulAndAccFloat(x[0], a[0], y0);
 
+        return (int32_t)y0;
+    }
 
+    // For debug purposes
+    void PrintState() {
+        Uart.Printf("\rSz=%d;\r", Sz);
+        //for(int32_t i=0; i<Sz; i++) Uart.Printf("a%d=%d ", i, a[i]);
+//        for(uint32_t i=0; i<Sz; i++) Uart.Printf("x%d=%d ", i, a[i]);
+    }
+};
+#endif
 
 #if 0 // ========================== Const filter ===============================
 /* ==== Example ====

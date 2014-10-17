@@ -8,6 +8,7 @@
 #include "main.h"
 #include "usb_f4.h"
 #include "usb_uart.h"
+#include "math.h"
 
 /*
  * DMA:
@@ -19,7 +20,6 @@ App_t App;
 
 int main(void) {
     // ==== Setup clock frequency ====
-    Clk.UpdateFreqValues();
     uint8_t ClkResult = 1;
     Clk.SetupFlashLatency(64);  // Setup Flash Latency for clock in MHz
     // 8 MHz/4 = 2; 2*192 = 384; 384/6 = 64 (preAHB divider); 384/8 = 48 (USB clock)
@@ -35,8 +35,9 @@ int main(void) {
     chSysInit();
 
     // ==== Init hardware ====
-    Adc.Init();
-    Dac.Init();
+//    Adc.Init();
+//    Dac.Init();
+
     // Leds
     PinSetupOut(LEDS_GPIO, LED_YELLOW_PIN, omPushPull);
     PinSetupOut(LEDS_GPIO, LED_GREEN_PIN, omPushPull);
@@ -56,9 +57,9 @@ int main(void) {
     while(true) App.ITask();
 }
 
-
 void App_t::Init() {
     PThread = chThdSelf();
+    PCurrentFilter = &FirFloat;
     // ==== Analog switch ====
     PinSetupOut(GPIOC, ADG_IN1_PIN, omPushPull, pudNone);
     PinSetupOut(GPIOC, ADG_IN2_PIN, omPushPull, pudNone);
@@ -66,7 +67,7 @@ void App_t::Init() {
     // ==== Sampling timer ====
     SamplingTmr.Init(TIM2);
     SamplingTmr.SetUpdateFrequency(10000); // Start Fsmpl value
-    SamplingTmr.EnableIrq(TIM2_IRQn, IRQ_PRIO_HIGH);
+    SamplingTmr.EnableIrq(TIM2_IRQn, IRQ_PRIO_MEDIUM);
     SamplingTmr.EnableIrqOnUpdate();
     SamplingTmr.Enable();
     // ==== Variables ====
@@ -83,7 +84,7 @@ void App_t::ITask() {
         static int32_t x1 = 0, y1=0;
         int32_t x0 = Adc.Rslt & ResolutionMask;
         int32_t y0 = x0 - 32768;
-        y0 = x0 - x1 + ((9990 * y1) / 10000);
+        y0 = x0 - x1 + ((9999 * y1) / 10000);
         x1 = x0;
         y1 = y0;
         y0 = -y0;
@@ -108,7 +109,7 @@ void App_t::ITask() {
 #if 1 // ======================= Command processing ============================
 void App_t::OnUartCmd() {
     UsbCmd_t *PCmd = UsbUart.PCmd;
-    int32_t dw32 __attribute__((unused));  // May be unused in some configurations
+    __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
     Uart.Printf("\r%S", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("#Ping")) UsbUart.Ack(OK);
@@ -181,7 +182,7 @@ void App_t::OnUartCmd() {
         // Optional other coefs
         while(true) {
             if(PCmd->GetNextToken() == OK) {
-                Uart.Printf("\rToken: %S", PCmd->Token);
+//                Uart.Printf("\rToken: %S", PCmd->Token);
                 if(PCmd->Token[0] == 'a') {
                     if(Convert::TryStrToInt32(&PCmd->Token[1], &IirInt.a[IirInt.SzA]) == OK) IirInt.SzA++;
                     else { UsbUart.Ack(CMD_ERROR); return; }    // error converting

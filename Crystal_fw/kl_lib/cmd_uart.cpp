@@ -52,7 +52,7 @@ void CmdUart_t::IPrintf(const char *format, va_list args) {
 }
 
 void CmdUart_t::ISendViaDMA() {
-    uint32_t PartSz = (TXBuf + UART_TXBUF_SIZE) - PRead; // Cnt from PRead to end of buf
+    int32_t PartSz = (TXBuf + UART_TXBUF_SIZE) - PRead; // Cnt from PRead to end of buf
     ITransSize = MIN(IFullSlotsCount, PartSz);
     if(ITransSize != 0) {
         IDmaIsIdle = false;
@@ -62,6 +62,21 @@ void CmdUart_t::ISendViaDMA() {
         dmaStreamEnable(UART_DMA_TX);
     }
 }
+
+#if 1 // ==== Print Now ====
+static inline void FPutCharNow(char c) {
+    while(!(UART->SR & USART_SR_TXE));
+    UART->DR = c;
+    while(!(UART->SR & USART_SR_TXE));
+}
+
+void CmdUart_t::PrintfNow(const char *S, ...) {
+    va_list args;
+    va_start(args, S);
+    kl_vsprintf(FPutCharNow, 99999, S, args);
+    va_end(args);
+}
+#endif
 
 #if UART_RX_ENABLED
 void CmdUart_t::PollRx() {
@@ -113,7 +128,7 @@ void CmdUart_t::Init(uint32_t ABaudrate) {
     else               UART->BRR = Clk.APB1FreqHz / ABaudrate;
     UART->CR2 = 0;
     // ==== DMA ====
-    dmaStreamAllocate     (UART_DMA_TX, IRQ_PRIO_HIGH, CmdUartTxIrq, NULL);
+    dmaStreamAllocate     (UART_DMA_TX, IRQ_PRIO_LOW, CmdUartTxIrq, NULL);
     dmaStreamSetPeripheral(UART_DMA_TX, &UART->DR);
     dmaStreamSetMode      (UART_DMA_TX, UART_DMA_TX_MODE);
 

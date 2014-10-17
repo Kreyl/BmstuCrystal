@@ -18,7 +18,7 @@
 #define UART_RX_ENABLED     FALSE
 
 // UART
-#define UART_TXBUF_SIZE     504
+#define UART_TXBUF_SIZE     54
 
 #define UART                USART1
 #define UART_GPIO           GPIOA
@@ -32,8 +32,8 @@
                             DMA_PRIORITY_LOW | \
                             STM32_DMA_CR_MSIZE_BYTE | \
                             STM32_DMA_CR_PSIZE_BYTE | \
-                            STM32_DMA_CR_MINC |       /* Memory pointer increase */ \
-                            STM32_DMA_CR_DIR_M2P |    /* Direction is memory to peripheral */ \
+                            STM32_DMA_CR_MINC       | /* Memory pointer increase */ \
+                            STM32_DMA_CR_DIR_M2P    | /* Direction is memory to peripheral */ \
                             STM32_DMA_CR_TCIE         /* Enable Transmission Complete IRQ */
 
 #if UART_RX_ENABLED // ==== RX ====
@@ -58,7 +58,7 @@ private:
     char TXBuf[UART_TXBUF_SIZE];
     char *PWrite, *PRead;
     bool IDmaIsIdle;
-    uint32_t IFullSlotsCount, ITransSize;
+    int32_t IFullSlotsCount, ITransSize;
     void ISendViaDMA();
 #if UART_RX_ENABLED
     int32_t SzOld=0, RIndx=0;
@@ -71,13 +71,7 @@ public:
     void Printf(const char *S, ...);
     void PrintfI(const char *S, ...);
     void FlushTx() { while(!IDmaIsIdle); }  // wait DMA
-    void PrintNow(const char *S) {
-        while(*S != 0) {
-            while(!(UART->SR & USART_SR_TXE));
-            UART->DR = *S++;
-            while(!(UART->SR & USART_SR_TXE));
-        }
-    }
+    void PrintfNow(const char *S, ...);
     void Init(uint32_t ABaudrate);
     void OnAHBFreqChange();
     void DeInit() { UART->CR1 &= ~USART_CR1_UE; /* UART Disable*/  }

@@ -34,6 +34,7 @@
  */
 
 #include <stdint.h>
+#include "chconf.h"
 
 #if !defined(FALSE)
 #define FALSE       0

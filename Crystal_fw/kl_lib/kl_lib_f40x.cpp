@@ -212,10 +212,7 @@ void PwmPin_t::SetFreqHz(uint32_t FreqHz) {
 
 #if 1 // ============================== DEBUG ==================================
 void chDbgPanic(const char *msg1) {
-    Uart.PrintNow("\r");
-    Uart.PrintNow(msg1);
-    Uart.PrintNow(" @");
-    Uart.PrintNow(chThdSelf()->p_name);
+    Uart.PrintfNow("\r%S @%S", msg1, chThdSelf()->p_name);
 }
 #endif
 

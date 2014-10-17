@@ -44,7 +44,8 @@ private:
     int32_t DacOutput;
     FirInt_t FirInt;
     IirInt_t IirInt;
-    Filter_t *PCurrentFilter = &FirInt;
+    FirFloat_t FirFloat;
+    Filter_t *PCurrentFilter;
     // Output switch
     void OutputFilterOn()  { PinClear(GPIOC, ADG_IN1_PIN); PinClear(GPIOC, ADG_IN2_PIN); }
     void OutputFilterOff() { PinSet  (GPIOC, ADG_IN1_PIN); PinSet  (GPIOC, ADG_IN2_PIN); }
