@@ -59,7 +59,9 @@ int main(void) {
 
 void App_t::Init() {
     PThread = chThdSelf();
-    PCurrentFilter = &Fir;
+//    PCurrentFilter = &Fir;
+    PCurrentFilter = &Notch;
+    Notch.Setup(0, 0.9);
     // ==== Analog switch ====
     PinSetupOut(GPIOC, ADG_IN1_PIN, omPushPull, pudNone);
     PinSetupOut(GPIOC, ADG_IN2_PIN, omPushPull, pudNone);

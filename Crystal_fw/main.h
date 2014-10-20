@@ -44,6 +44,7 @@ private:
     int32_t DacOutput;
     FirFloat_t Fir;
     IirFloat_t Iir;
+    NotchFloat_t Notch;
     Filter_t *PCurrentFilter;
     // Output switch
     void OutputFilterOn()  { PinClear(GPIOC, ADG_IN1_PIN); PinClear(GPIOC, ADG_IN2_PIN); }

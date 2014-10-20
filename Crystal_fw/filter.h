@@ -9,7 +9,6 @@
 #define FILTER_H_
 
 #include "cmd_uart.h"
-//#include "arm_math.h"
 #include "math.h"
 
 class Filter_t {
@@ -211,6 +210,60 @@ public:
 };
 #endif
 
+#if 1 // ============================ All-pass =================================
+class AllPass_t {
+private:
+    float c1;
+public:
+    float k;
+    void Reset() { c1 = 0; }
+    float AddXAndCalculate(float x0, float *pcOut) {
+        float b = k * (x0 - c1);
+        *pcOut = x0 + b;
+        return b + c1;
+    }
+    void Put_cIn(float cIn) { c1 = cIn; }
+};
+
+#endif
+
+#if 1 // ============================ Notch Float ==============================
+class NotchFloat_t : public Filter_t {
+private:
+    AllPass_t AllP0, AllP1;
+public:
+    // Settins
+    void Setup(float k1, float k2) {
+        AllP0.k = k2;
+        AllP1.k = k1;
+    }
+    // Commands
+    void Reset() {
+        AllP0.Reset();
+        AllP1.Reset();
+    }
+    void ResetCoefs() {
+        AllP0.k = 0;
+        AllP1.k = 0;
+    }
+    int32_t AddXAndCalculate(int32_t x) {
+        if(!Running) return 0;
+        float x0 = x;
+        // ==== All-Pass filter, 2nd order ====
+        float cOutStage1 = 0;
+        // Stage 1
+        float y0 = AllP0.AddXAndCalculate(x0, &cOutStage1);
+        // Stage 2
+        float cOutStage2 = 0;
+        float yStage2 = AllP1.AddXAndCalculate(cOutStage1, &cOutStage2);
+        AllP1.Put_cIn(cOutStage2);  // Put cOutStage2 to input of Stage 2
+        AllP0.Put_cIn(yStage2);     // Put yStage2 to input of Stage 1
+        // ==== Notch filter ====
+        y0 = (y0 + x0) / 2;
+        return roundf(y0);
+    }
+};
+#endif
 
 #if 0 // ========================== Const filter ===============================
 /* ==== Example ====

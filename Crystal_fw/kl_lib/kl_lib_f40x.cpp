@@ -218,58 +218,6 @@ void chDbgPanic(const char *msg1) {
 }
 #endif
 
-#if 0 // ============================ StdLib====================================
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/times.h>
-#include <sys/unistd.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-/*
- write
- Write a character to a file. `libc' subroutines will use this system routine for output to all files, including stdout
- Returns -1 on error or number of bytes sent
- */
-int _write(int file, char *ptr, int len) {
-    Uart.PrintfNow("\r%S", ptr);
-    return len;
-}
-
-/*
- sbrk
- Increase program data space.
- Malloc and related functions depend on this
- */
-caddr_t _sbrk(int incr) {
-
-    extern char _ebss; // Defined by the linker
-    static char *heap_end;
-    char *prev_heap_end;
-
-    if (heap_end == 0) {
-        heap_end = &_ebss;
-    }
-    prev_heap_end = heap_end;
-
-    char * stack = (char*) __get_MSP();
-    if (heap_end + incr >  stack) {
-        _write (STDERR_FILENO, "Heap and stack collision\n", 25);
-        errno = ENOMEM;
-        return  (caddr_t) -1;
-        //abort ();
-    }
-    heap_end += incr;
-    return (caddr_t) prev_heap_end;
-}
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
-
 // ================================= Random ====================================
 uint32_t Random(uint32_t TopValue) {
     rccEnableAHB2(RCC_AHB2ENR_RNGEN, FALSE);    // Enable clock
