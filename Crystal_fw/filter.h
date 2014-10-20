@@ -143,8 +143,8 @@ private:
     float x[FIR_MAX_SZ];
 public:
     // Settins
-    int32_t Sz = 4;
-    float a[FIR_MAX_SZ] = { 0.4, 0.3, 0.2, 0.1 };
+    int32_t Sz = 1;
+    float a[FIR_MAX_SZ] = { 1 };
     // Commands
     void Reset() { for(int i=0; i<FIR_MAX_SZ; i++) x[i] = 0; }
     void ResetCoefs() {

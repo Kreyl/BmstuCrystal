@@ -10,7 +10,7 @@
 #include "cmd_uart.h"
 #include <string.h>
 
-// ================================ Timer ======================================
+#if 1 // ============================= Timer ===================================
 void Timer_t::Init(TIM_TypeDef* Tmr) {
     ITmr = Tmr;
     if     (ITmr == TIM1)  { rccEnableTIM1(FALSE); }
@@ -88,8 +88,9 @@ void Timer_t::PwmInit(GPIO_TypeDef *GPIO, uint16_t N, uint8_t Chnl, Inverted_t I
         default: break;
     }
 }
+#endif
 
-// ================================ PWM pin ====================================
+#if 1 // ============================= PWM pin =================================
 void PwmPin_t::Init(GPIO_TypeDef *GPIO, uint16_t N, uint8_t TimN, uint8_t Chnl, uint16_t TopValue, bool Inverted) {
     switch(TimN) {
         case 1:
@@ -209,11 +210,64 @@ void PwmPin_t::SetFreqHz(uint32_t FreqHz) {
     if(FPrescaler != 0) FPrescaler--;   // do not decrease in case of high freq
     Tim->PSC = (uint16_t)FPrescaler;
 }
+#endif
 
 #if 1 // ============================== DEBUG ==================================
 void chDbgPanic(const char *msg1) {
     Uart.PrintfNow("\r%S @%S", msg1, chThdSelf()->p_name);
 }
+#endif
+
+#if 0 // ============================ StdLib====================================
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/times.h>
+#include <sys/unistd.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+/*
+ write
+ Write a character to a file. `libc' subroutines will use this system routine for output to all files, including stdout
+ Returns -1 on error or number of bytes sent
+ */
+int _write(int file, char *ptr, int len) {
+    Uart.PrintfNow("\r%S", ptr);
+    return len;
+}
+
+/*
+ sbrk
+ Increase program data space.
+ Malloc and related functions depend on this
+ */
+caddr_t _sbrk(int incr) {
+
+    extern char _ebss; // Defined by the linker
+    static char *heap_end;
+    char *prev_heap_end;
+
+    if (heap_end == 0) {
+        heap_end = &_ebss;
+    }
+    prev_heap_end = heap_end;
+
+    char * stack = (char*) __get_MSP();
+    if (heap_end + incr >  stack) {
+        _write (STDERR_FILENO, "Heap and stack collision\n", 25);
+        errno = ENOMEM;
+        return  (caddr_t) -1;
+        //abort ();
+    }
+    heap_end += incr;
+    return (caddr_t) prev_heap_end;
+}
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 
 // ================================= Random ====================================

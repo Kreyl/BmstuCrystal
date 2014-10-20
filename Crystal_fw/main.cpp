@@ -167,6 +167,32 @@ void App_t::OnUartCmd() {
     }
 #endif
 
+#if 1 // ==== Float FIR ====
+    else if(PCmd->NameIs("#SetFirFloat")) {
+        PCurrentFilter->Stop();
+        FirFloat.Reset();
+        FirFloat.ResetCoefs();
+        // ==== Coeffs ====
+        // a[0] is mandatory
+        Uart.Printf("\r1");
+        if((PCmd->Token[0] != 'a') or (Convert::TryStrToFloat(&PCmd->Token[1], &FirFloat.a[0]) != OK)) { UsbUart.Ack(CMD_ERROR); return; }
+        Uart.Printf("\r2");
+        FirFloat.Sz = 1;
+        // Optional other coefs
+        while(PCmd->GetNextToken() == OK and FirFloat.Sz < FIR_MAX_SZ) {
+            if(PCmd->Token[0] == 'a') {
+                if(Convert::TryStrToFloat(&PCmd->Token[1], &FirFloat.a[FirFloat.Sz]) == OK) FirFloat.Sz++;
+                else { UsbUart.Ack(CMD_ERROR); return; }    // error converting
+            }
+            else { UsbUart.Ack(CMD_ERROR); return; }    // != 'a'
+        }
+        UsbUart.Ack(OK);
+        PCurrentFilter = &FirFloat;
+        FirFloat.Start();
+        FirFloat.PrintState();
+    }
+#endif
+
 #if 1 // ==== Int IIR ====
     else if(PCmd->NameIs("#SetIirInt")) {
         PCurrentFilter->Stop();

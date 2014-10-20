@@ -143,6 +143,13 @@ public:
         *POutput = strtol(S, &p, 0);
         return (*p == '\0')? OK : NOT_A_NUMBER;
     }
+    // ==== Float ====
+    static inline uint8_t TryStrToFloat(char* S, float *POutput) {
+        if(*S == '\0') return EMPTY_STRING;
+        char *p;
+        *POutput = strtof(S, &p);
+        return (*p == '\0')? OK : NOT_A_NUMBER;
+    }
 };
 #endif
 
