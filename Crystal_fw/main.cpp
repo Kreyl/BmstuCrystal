@@ -59,7 +59,7 @@ int main(void) {
 
 void App_t::Init() {
     PThread = chThdSelf();
-    PCurrentFilter = &FirFloat;
+    PCurrentFilter = &Fir;
     // ==== Analog switch ====
     PinSetupOut(GPIOC, ADG_IN1_PIN, omPushPull, pudNone);
     PinSetupOut(GPIOC, ADG_IN2_PIN, omPushPull, pudNone);
@@ -136,96 +136,58 @@ void App_t::OnUartCmd() {
     else if(PCmd->NameIs("#Stop"))  { PCurrentFilter->Stop();  UsbUart.Ack(OK); }
 #endif
 
-#if 1 // ==== Int FIR ====
-    else if(PCmd->NameIs("#SetFirInt")) {
-        PCurrentFilter->Stop();
-        FirInt.Reset();
-        FirInt.ResetCoefs();
-        // Mandatory Divider
-        if(PCmd->TryConvertTokenToNumber(&FirInt.Divider) != OK) { UsbUart.Ack(CMD_ERROR); return; }
-        // ==== Coeffs ====
-        // a[0] is mandatory
-        if(PCmd->GetNextToken() != OK) { UsbUart.Ack(CMD_ERROR); return; }
-        if((PCmd->Token[0] != 'a') or (Convert::TryStrToInt32(&PCmd->Token[1], &FirInt.a[0]) != OK)) { UsbUart.Ack(CMD_ERROR); return; }
-        FirInt.Sz = 1;
-        // Optional other coefs
-        while(true) {
-            if(PCmd->GetNextToken() == OK) {
-                if(PCmd->Token[0] == 'a') {
-                    if(Convert::TryStrToInt32(&PCmd->Token[1], &FirInt.a[FirInt.Sz]) == OK) FirInt.Sz++;
-                    else { UsbUart.Ack(CMD_ERROR); return; }    // error converting
-                }
-                else { UsbUart.Ack(CMD_ERROR); return; }    // != 'a'
-            }
-            else break;   // no more coeffs
-            if(FirInt.Sz >= FIR_MAX_SZ) break;
-        }
-        UsbUart.Ack(OK);
-        PCurrentFilter = &FirInt;
-        FirInt.Start();
-        FirInt.PrintState();
-    }
-#endif
-
 #if 1 // ==== Float FIR ====
-    else if(PCmd->NameIs("#SetFirFloat")) {
+    else if(PCmd->NameIs("#SetupFir")) {
         PCurrentFilter->Stop();
-        FirFloat.Reset();
-        FirFloat.ResetCoefs();
+        Fir.Reset();
+        Fir.ResetCoefs();
         // ==== Coeffs ====
         // a[0] is mandatory
-        Uart.Printf("\r1");
-        if((PCmd->Token[0] != 'a') or (Convert::TryStrToFloat(&PCmd->Token[1], &FirFloat.a[0]) != OK)) { UsbUart.Ack(CMD_ERROR); return; }
-        Uart.Printf("\r2");
-        FirFloat.Sz = 1;
+        if((PCmd->Token[0] != 'a') or (Convert::TryStrToFloat(&PCmd->Token[1], &Fir.a[0]) != OK)) { UsbUart.Ack(CMD_ERROR); return; }
+        Fir.Sz = 1;
         // Optional other coefs
-        while(PCmd->GetNextToken() == OK and FirFloat.Sz < FIR_MAX_SZ) {
+        while(PCmd->GetNextToken() == OK and Fir.Sz < FIR_MAX_SZ) {
             if(PCmd->Token[0] == 'a') {
-                if(Convert::TryStrToFloat(&PCmd->Token[1], &FirFloat.a[FirFloat.Sz]) == OK) FirFloat.Sz++;
+                if(Convert::TryStrToFloat(&PCmd->Token[1], &Fir.a[Fir.Sz]) == OK) Fir.Sz++;
                 else { UsbUart.Ack(CMD_ERROR); return; }    // error converting
             }
             else { UsbUart.Ack(CMD_ERROR); return; }    // != 'a'
         }
         UsbUart.Ack(OK);
-        PCurrentFilter = &FirFloat;
-        FirFloat.Start();
-        FirFloat.PrintState();
+        PCurrentFilter = &Fir;
+        Fir.Start();
+        Fir.PrintState();
     }
 #endif
 
-#if 1 // ==== Int IIR ====
-    else if(PCmd->NameIs("#SetIirInt")) {
+#if 1 // ==== Float IIR ====
+    else if(PCmd->NameIs("#SetupIir")) {
         PCurrentFilter->Stop();
-        IirInt.Reset();
-        IirInt.ResetCoefs();
-        // Mandatory Divider
-        if(PCmd->TryConvertTokenToNumber(&IirInt.Divider) != OK) { UsbUart.Ack(CMD_ERROR); return; }
+        Iir.Reset();
+        Iir.ResetCoefs();
         // ==== Coeffs ==== b[0] acts as b[1]
         // a[0] is mandatory
-        if(PCmd->GetNextToken() != OK) { UsbUart.Ack(CMD_ERROR); return; }
-        if((PCmd->Token[0] != 'a') or (Convert::TryStrToInt32(&PCmd->Token[1], &IirInt.a[0]) != OK)) { UsbUart.Ack(CMD_ERROR); return; }
-        IirInt.SzA = 1;
+        if((PCmd->Token[0] != 'a') or (Convert::TryStrToFloat(&PCmd->Token[1], &Iir.a[0]) != OK)) { UsbUart.Ack(CMD_ERROR); return; }
+        Iir.SzA = 1;
         // Optional other coefs
-        while(true) {
-            if(PCmd->GetNextToken() == OK) {
+        while(PCmd->GetNextToken() == OK) {
 //                Uart.Printf("\rToken: %S", PCmd->Token);
-                if(PCmd->Token[0] == 'a') {
-                    if(Convert::TryStrToInt32(&PCmd->Token[1], &IirInt.a[IirInt.SzA]) == OK) IirInt.SzA++;
-                    else { UsbUart.Ack(CMD_ERROR); return; }    // error converting
-                }
-                else if(PCmd->Token[0] == 'b') {
-                    if(Convert::TryStrToInt32(&PCmd->Token[1], &IirInt.b[IirInt.SzB]) == OK) IirInt.SzB++;
-                    else { UsbUart.Ack(CMD_ERROR); return; }    // error converting
-                }
-                else { UsbUart.Ack(CMD_ERROR); return; }    // != 'a'
+            if(PCmd->Token[0] == 'a') {
+                if(Iir.SzA >= IIR_MAX_SZ) { UsbUart.Ack(CMD_ERROR); return; }   // Too many coefs
+                if(Convert::TryStrToFloat(&PCmd->Token[1], &Iir.a[Iir.SzA]) == OK) Iir.SzA++;
+                else { UsbUart.Ack(CMD_ERROR); return; }    // error converting
             }
-            else break;   // no more coeffs
-            if(IirInt.SzA >= IIR_MAX_SZ or IirInt.SzB >= IIR_MAX_SZ) break;
+            else if(PCmd->Token[0] == 'b') {
+                if(Iir.SzB >= IIR_MAX_SZ) { UsbUart.Ack(CMD_ERROR); return; }   // Too many coefs
+                if(Convert::TryStrToFloat(&PCmd->Token[1], &Iir.b[Iir.SzB]) == OK) Iir.SzB++;
+                else { UsbUart.Ack(CMD_ERROR); return; }    // error converting
+            }
+            else { UsbUart.Ack(CMD_ERROR); return; }    // != 'a'
         }
         UsbUart.Ack(OK);
-        PCurrentFilter = &IirInt;
-        IirInt.Start();
-        IirInt.PrintState();
+        PCurrentFilter = &Iir;
+        Iir.Start();
+        Iir.PrintState();
     }
 #endif
 

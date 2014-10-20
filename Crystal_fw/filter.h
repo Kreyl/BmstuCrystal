@@ -10,23 +10,7 @@
 
 #include "cmd_uart.h"
 //#include "arm_math.h"
-
-#if 1 // ==== DSP instructions ====
-__attribute__((always_inline))
-static inline int32_t MulAndAcc(int32_t op1, int32_t op2, int32_t acc) {
-    int32_t rslt;
-    asm volatile ("mla %0, %1, %2, %3" : "=r" (rslt) : "r" (op1), "r" (op2), "r" (acc));
-    return rslt;
-}
-
-__attribute__((always_inline))
-static inline float MulAndAccFloat(float op1, float op2, float acc) {
-    float rslt;
-    //asm volatile ("VLMA %0, %1, %2" : "=r" (rslt) : "r" (op1), "r" (op2), "r" (acc));
-    rslt = acc + op1 * op2;
-    return rslt;
-}
-#endif
+#include "math.h"
 
 class Filter_t {
 public:
@@ -40,8 +24,10 @@ public:
     virtual int32_t AddXAndCalculate(int32_t x0);
 };
 
-#if 1 // ============================ FIR int ==================================
 #define FIR_MAX_SZ  20
+#define IIR_MAX_SZ  10
+
+#if 0 // ============================ FIR int ==================================
 class FirInt_t : public Filter_t {
 private:
     int32_t x[FIR_MAX_SZ];
@@ -78,8 +64,7 @@ public:
 };
 #endif
 
-#if 1 // ============================ IIR int ==================================
-#define IIR_MAX_SZ  10
+#if 0 // ============================ IIR int ==================================
 class IirInt_t : public Filter_t {
 private:
     int32_t x[IIR_MAX_SZ];
@@ -137,7 +122,7 @@ public:
 };
 #endif
 
-#if 1 // ============================ FIR float ================================
+#if 1 // ============================ FIR Float ================================
 class FirFloat_t : public Filter_t {
 private:
     float x[FIR_MAX_SZ];
@@ -156,14 +141,12 @@ public:
         float y0=0;
         x[0] = x0;
         for(int i=Sz-1; i>=1; i--) {
-            y0 = MulAndAccFloat(x[i], a[i], y0);
+            y0 += x[i] * a[i];
             x[i] = x[i-1];
         }
-        y0 = MulAndAccFloat(x[0], a[0], y0);
-
-        return (int32_t)y0;
+        y0 += x[0] * a[0];
+        return roundf(y0);
     }
-
     // For debug purposes
     void PrintState() {
         Uart.Printf("\rSz=%d;\r", Sz);
@@ -172,6 +155,62 @@ public:
     }
 };
 #endif
+
+#if 1 // ============================ IIR Float ==================================
+class IirFloat_t : public Filter_t {
+private:
+    float x[IIR_MAX_SZ];
+    float y[IIR_MAX_SZ];
+public:
+    // Settins
+    int32_t SzA = 1, SzB = 0;
+    float a[IIR_MAX_SZ] = { a[0] = 1 };
+    float b[IIR_MAX_SZ];
+    // Commands
+    void Reset() {
+        for(int i=0; i<IIR_MAX_SZ; i++) {
+            x[i] = 0;
+            y[i] = 0;
+        }
+    }
+    void ResetCoefs() {
+        SzA=0;
+        SzB=0;
+        for(int i=0; i<IIR_MAX_SZ; i++) {
+            a[i] = 0;
+            b[i] = 0;
+        }
+    }
+    int32_t AddXAndCalculate(int32_t x0) {
+        if(!Running) return 0;
+        float y0=0;
+        // None-recursive part
+        x[0] = x0;
+        for(int i=SzA-1; i>=1; i--) {
+            y0 += x[i] * a[i];
+            x[i] = x[i-1];
+        }
+        y0 += x[0] * a[0];
+        // Recursive part
+        for(int i=SzB-1; i>=1; i--) {
+            y0 += y[i] * b[i];
+            y[i] = y[i-1];
+        }
+        y0 += y[0] * b[0];
+        y[0] = y0;
+        return roundf(y0);
+    }
+
+    // For debug purposes
+    void PrintState() {
+        Uart.Printf("\rSzA=%d; SzB=%d", SzA, SzB);
+//        for(int32_t i=0; i<SzA; i++) Uart.Printf("a%d=%d ", i, a[i]);
+//        Uart.Printf("\r");
+//        for(int32_t i=0; i<SzB; i++) Uart.Printf("b%d=%d ", i, b[i]);
+    }
+};
+#endif
+
 
 #if 0 // ========================== Const filter ===============================
 /* ==== Example ====

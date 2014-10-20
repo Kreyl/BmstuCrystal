@@ -42,9 +42,8 @@ private:
     Timer_t SamplingTmr;
     uint16_t ResolutionMask = 0xFFFF;
     int32_t DacOutput;
-    FirInt_t FirInt;
-    IirInt_t IirInt;
-    FirFloat_t FirFloat;
+    FirFloat_t Fir;
+    IirFloat_t Iir;
     Filter_t *PCurrentFilter;
     // Output switch
     void OutputFilterOn()  { PinClear(GPIOC, ADG_IN1_PIN); PinClear(GPIOC, ADG_IN2_PIN); }
