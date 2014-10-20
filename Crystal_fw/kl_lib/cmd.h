@@ -11,10 +11,6 @@
 #include "hal.h"
 #include <cstring>
 
-#ifdef STM32F4XX
-#include "kl_lib_f40x.h"
-#endif
-
 #define DELIMITERS      " ,"
 
 enum ProcessDataResult_t {pdrProceed, pdrNewCmd};
@@ -44,9 +40,11 @@ public:
         return (*Token == '\0')? FAILURE : OK;
     }
     void Reset() { Cnt = 0; }
-    uint8_t TryConvertTokenToNumber( int32_t *POutput) {
-        uint8_t rslt = Convert::TryStrToInt32(Token, POutput);
-        return rslt;
+    uint8_t TryConvertTokenToNumber(int32_t *POutput) {
+        if(*Token == '\0') return EMPTY_STRING;
+        char *p;
+        *POutput = strtol(Token, &p, 0);
+        return (*p == '\0')? OK : NOT_A_NUMBER;
     }
     bool NameIs(const char *SCmd) { return (strcasecmp(Name, SCmd) == 0); }
 };
