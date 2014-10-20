@@ -5,8 +5,8 @@ Start
 ##Start#010#013
 Stop
 ##Stop#010#013
-
-
+fir
+##SetFir a0.4 a0.3 a0.2 a0.1#010#013
 SF1k
 ##SetSmplFreq 1000#010#013
 SF2k
@@ -23,22 +23,22 @@ FltOn
 ##OutFilterOn#010#013
 FltOff
 ##OutFilterOff#010#013
-/2
-##SetIirInt 100 a50#010#013
-FirInt
-##SetFirInt 10 a0,a1,a2,a3,a4,a3,a2,a1,a0#010#013
+
+
+fir dif
+##SetFirFloat a1 a-0.3934 a-0.2386 a-0.1447 a-0.0877 a-0.0532 a-0.0322 a-0.0195 a-0.0118 a-0.0072#010#013
+fir Int
+##SetFirFloat a0 a0.3934 a0.2386 a0.1447 a0.0877 a0.0532 a0.0322 a0.0195 a0.0118 a0.0072#010#013
 iir dif
 ##SetIirInt 10 a10,a-10,b9#010#013
-iir bat
-##SetIirInt 10000 a2065,a4131,a2065,b3695,b-1958#010#013
+iir int
+##SetIirInt 10 a0,a1,b9#010#013
 iir res
 ##SetIirInt 10000 a10000,b5804,b-8819#010#013
-
-
-
-
-
-
+iir bat
+##SetIirInt 10000 a2065,a4131,a2065,b3695,b-1958#010#013
+.999
+##SetiirInt 1000, a1000,b1000#010#013
 1 bit
 ##SetResolution 1#010#013
 3 bit
