@@ -234,17 +234,12 @@ private:
 public:
     // Settins
     void Setup(float k1, float k2) {
-        AllP0.k = k2;
-        AllP1.k = k1;
+        AllP0.k = k2; // }
+        AllP1.k = k1; // } Yes, first stage uses k2, second - k1
     }
-    // Commands
     void Reset() {
         AllP0.Reset();
         AllP1.Reset();
-    }
-    void ResetCoefs() {
-        AllP0.k = 0;
-        AllP1.k = 0;
     }
     int32_t AddXAndCalculate(int32_t x) {
         if(!Running) return 0;

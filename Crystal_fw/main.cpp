@@ -59,9 +59,7 @@ int main(void) {
 
 void App_t::Init() {
     PThread = chThdSelf();
-//    PCurrentFilter = &Fir;
-    PCurrentFilter = &Notch;
-    Notch.Setup(0, 0.9);
+    PCurrentFilter = &Fir;
     // ==== Analog switch ====
     PinSetupOut(GPIOC, ADG_IN1_PIN, omPushPull, pudNone);
     PinSetupOut(GPIOC, ADG_IN2_PIN, omPushPull, pudNone);
@@ -72,9 +70,6 @@ void App_t::Init() {
     SamplingTmr.EnableIrq(TIM2_IRQn, IRQ_PRIO_MEDIUM);
     SamplingTmr.EnableIrqOnUpdate();
     SamplingTmr.Enable();
-    // ==== Variables ====
-//    pyWrite = y;
-//    pyRead = y;
 }
 
 void App_t::ITask() {
@@ -192,6 +187,23 @@ void App_t::OnUartCmd() {
         Iir.PrintState();
     }
 #endif
+
+#if 1 // ==== Notch ====
+    else if(PCmd->NameIs("#SetupNotch")) {
+        PCurrentFilter->Stop();
+        Notch.Reset();
+        // ==== Coeffs ====
+        float k1, k2; // Both are mandatory
+        if(Convert::TryStrToFloat(PCmd->Token, &k1) != OK) { UsbUart.Ack(CMD_ERROR); return; }
+        if(PCmd->GetNextToken() != OK)                     { UsbUart.Ack(CMD_ERROR); return; }
+        if(Convert::TryStrToFloat(PCmd->Token, &k2) != OK) { UsbUart.Ack(CMD_ERROR); return; }
+        UsbUart.Ack(OK);
+        Notch.Setup(k1, k2);
+        PCurrentFilter = &Notch;
+        Notch.Start();
+    }
+#endif
+
 
     else if(*PCmd->Name == '#') UsbUart.Ack(CMD_UNKNOWN);  // reply only #-started stuff
 }
