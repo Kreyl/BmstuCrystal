@@ -25,9 +25,9 @@ static const DeviceDescriptor_t DeviceDescriptor = {
         bDeviceSubClass:    0x00,            // No SubClass
         bDeviceProtocol:    0x00,            // No Protocol
         bMaxPacketSize0:    EP0_SZ,          // bMaxPacketSize0
-        idVendor:           0x21BB,          // idVendor (WWPass)
-        idProduct:          0x0009,          // idProduct; #9 means Virtual COM Port
-        bcdDevice:          0x0001,          // bcdDevice
+        idVendor:           0x0483,          // idVendor (ST)
+        idProduct:          0x5740,          // idProduct
+        bcdDevice:          0x0002,          // bcdDevice
         iManufacturer:      1,               // iManufacturer
         iProduct:           2,               // iProduct
         iSerialNumber:      3,               // iSerialNumber: A serial number prevents unwanted “COM-port proliferation.” A device with a serial number retains its COM-port number if moved to a different USB port on a Windows PC
