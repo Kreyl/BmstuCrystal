@@ -250,6 +250,12 @@ void Usb_t::SetupPktHandler() {
             Ep[0].PrepareInTransaction(FLength);   // Just prepare; may not fill fifo here
             Ep[0].StartInTransaction();
             break;
+        case esOutData:
+            Ep[0].PtrOut = FPtr;
+            Ep[0].LengthOut = FLength;
+            Ep[0].PrepareOutTransaction(FLength);
+            Ep[0].StartOutTransaction();
+            break;
         case esOutStatus:
             Ep[0].TransmitZeroPkt();
             break;
@@ -309,12 +315,18 @@ EpState_t Usb_t::DefaultReqHandler(uint8_t **PPtr, uint32_t *PLen) {
             default: break;
         } // switch
     }
-//    else if(Recipient == USB_REQTYPE_RECIPIENT_INTERFACE) {
-//        if(SetupReq.bRequest == USB_REQ_SET_INTERFACE) {
-//            //EP0_PRINT("InterfaceSet\r");
-//            return esOutStatus;
-//        }
-//    }
+    else if(Recipient == USB_REQTYPE_RECIPIENT_INTERFACE) {
+        if(SetupReq.bRequest == USB_REQ_SET_INTERFACE) {
+            if(SetupReq.wIndex > 1 or SetupReq.wValue != 0) return esError;
+            return esOutStatus;
+        }
+        else if(SetupReq.bRequest == USB_REQ_GET_INTERFACE) {
+            if(SetupReq.wIndex > 1) return esError;
+            *PPtr = (uint8_t*)cZero;
+            *PLen = 1;
+            return esInData;
+        }
+    }
     else if(Recipient == USB_REQTYPE_RECIPIENT_ENDPOINT) {
         EP0_PRINT("\rEp");
         switch(SetupReq.bRequest) {
@@ -410,7 +422,7 @@ void Usb_t::IEpOutHandler(uint8_t EpID) {
     }
     // Receive transfer complete
     if((epint & DOEPINT_XFRC) and (OTG_FS->DOEPMSK & DOEPMSK_XFRCM)) {
-//        Uart.Printf("Out XFR cmp\r\n");
+//        Uart.PrintfI("\rOut XFR cmp");
         if(EpID == 0) {
             if(Ep[0].PktState == psZeroPkt) {
                 Ep[0].PktState = psNoPkt;
@@ -418,6 +430,11 @@ void Usb_t::IEpOutHandler(uint8_t EpID) {
                 Ep[0].PrepareOutTransaction(1, 3*8);
                 Ep[0].StartOutTransaction();
             }
+            else {
+                Ep[0].TransmitZeroPkt();
+                if(Events.OnDataOUT[EpID] != nullptr and Ep[EpID].LengthOut == 0) Events.OnDataOUT[EpID]();
+            }
+
         }
         else {// Restart reception if needed
 //            Uart.Printf("OutXFRC #%u\r", EpID);
@@ -514,7 +531,7 @@ void Usb_t::IRxHandler() {
             }
             else {
                 Ep[EpID].PktState = psDataPkt;
-//                Uart.PrintfI("\rDataRcvd for %u", EpID);
+//                Uart.PrintfI("\r%u bytes rcvd for %u", Len, EpID);
                 // Read to queue
                 if(Ep[EpID].POutQueue != nullptr) {
                     Ep[EpID].FifoToQueue(Len);
@@ -526,7 +543,6 @@ void Usb_t::IRxHandler() {
                     Ep[EpID].FifoToBuf(Ep[EpID].PtrOut, Len);
                     Ep[EpID].LengthOut -= Len;
                     Ep[EpID].PtrOut += Len;
-                    if(Events.OnDataOUT[EpID] != nullptr and Ep[EpID].LengthOut == 0) Events.OnDataOUT[EpID]();
                 }
                 else RxFifoFlush();
             }

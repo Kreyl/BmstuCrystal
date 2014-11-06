@@ -143,9 +143,9 @@ static const StringDescriptor_t LanguageString = {
 
 // Vendor string
 static const StringDescriptor_t ManufacturerString = {
-        bLength: USB_STRING_LEN(6),
+        bLength: USB_STRING_LEN(8),
         bDescriptorType: dtString,
-        bString: {'W', 'W', 'P', 'a', 's', 's'}
+        bString: {'O','s','t','r','a','n','n','a'}
 };
 
 // Device Description string

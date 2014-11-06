@@ -58,21 +58,21 @@ static void OnUsbReady() {
 }
 
 //static void SetLineCoding() {
-//    Uart.PrintfI("\r%S", __FUNCTION__);
+////    Uart.PrintfI("\r%S", __FUNCTION__);
 //}
-static void SetCtrlLineState() {
+//static void SetCtrlLineState() {
 //    Uart.PrintfI("\r%S", __FUNCTION__);
 //    uint16_t w = Usb.SetupReq.wValue;
 //    if(w & 0x0001) Uart.Printf("DTR 1\r");
 //    else Uart.Printf("DTR 0\r");
 //    if(w & 0x0002) Uart.Printf("RTS 1\r");
 //    else Uart.Printf("RTS 0\r");
-}
+//}
 
 // Handler of non-standard control pkt
 EpState_t NonStandardControlRequestHandler(uint8_t **PPtr, uint32_t *PLen) {
-//    Uart.PrintfI("\r%S", __FUNCTION__);
-    //Uart.Printf("NonStandard Request\r");
+//    Uart.PrintfI("\r%S  %A", __FUNCTION__, &Usb.SetupReq, 8, ' ');
+//    Uart.PrintfI("\r%A", Usb.Ep0OutBuf, 8, ' ');
     // Check if class type request
     if((Usb.SetupReq.bmRequestType & USB_REQTYPE_TYPEMASK) == USB_REQTYPE_CLASS) {
         switch(Usb.SetupReq.bRequest) {
@@ -87,13 +87,13 @@ EpState_t NonStandardControlRequestHandler(uint8_t **PPtr, uint32_t *PLen) {
 //                Uart.PrintfI("\rSET_LINE_CODING");
                 *PPtr = (uint8_t*)&LineCoding;  // Do not use length in setup pkt
                 *PLen = sizeof(LineCoding);
-//                Usb.Events.OnTransactionEnd[0] = SetLineCoding; // FIXME
+//                Usb.Events.OnDataOUT[0] = SetLineCoding;
                 return esOutData;
                 break;
 
             case CDC_SET_CONTROL_LINE_STATE:    // Nothing to do, there are no control lines
 //                Uart.PrintfI("\rSET_CTRL_LINE_STATE");
-                SetCtrlLineState();
+//                SetCtrlLineState();
                 return esOutStatus;
                 break;
             default: break;
