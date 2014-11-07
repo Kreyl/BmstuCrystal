@@ -18,16 +18,16 @@
 
 #if 1 // ==== Leds ====
 #define LEDS_GPIO           GPIOC
-#define LED_YELLOW_PIN      7
-#define LED_GREEN_PIN       6
-#define LED_RED_PIN         8
+#define LED1_PIN            6
+#define LED2_PIN            7
+#define LED3_PIN            8
 
-#define LED_YELLOW_ON()     PinSet  (LEDS_GPIO, LED_YELLOW_PIN)
-#define LED_YELLOW_OFF()    PinClear(LEDS_GPIO, LED_YELLOW_PIN)
-#define LED_GREEN_ON()      PinSet  (LEDS_GPIO, LED_GREEN_PIN)
-#define LED_GREEN_OFF()     PinClear(LEDS_GPIO, LED_GREEN_PIN)
-#define LED_RED_ON()        PinSet  (LEDS_GPIO, LED_RED_PIN)
-#define LED_RED_OFF()       PinClear(LEDS_GPIO, LED_RED_PIN)
+#define LED1_ON()           PinSet  (LEDS_GPIO, LED1_PIN)
+#define LED1_OFF()          PinClear(LEDS_GPIO, LED1_PIN)
+#define LED2_ON()           PinSet  (LEDS_GPIO, LED2_PIN)
+#define LED2_OFF()          PinClear(LEDS_GPIO, LED2_PIN)
+#define LED3_ON()           PinSet  (LEDS_GPIO, LED3_PIN)
+#define LED3_OFF()          PinClear(LEDS_GPIO, LED3_PIN)
 #endif
 
 #define MAX_X_CNT           11
@@ -46,6 +46,7 @@ private:
     IirFloat_t Iir;
     NotchFloat_t Notch;
     Filter_t *PCurrentFilter;
+    VirtualTimer Led3Tmr;
     // Output switch
     void OutputFilterOn()  { PinClear(GPIOC, ADG_IN1_PIN); PinClear(GPIOC, ADG_IN2_PIN); }
     void OutputFilterOff() { PinSet  (GPIOC, ADG_IN1_PIN); PinSet  (GPIOC, ADG_IN2_PIN); }
@@ -54,6 +55,8 @@ public:
     void Init();
     void SignalAdcRsltReady() { chEvtSignalI(PThread, EVTMSK_ADC_READY); }
     void SignalUsbDataOut()   { chEvtSignalI(PThread, EVTMSK_USB_DATA_OUT); }
+    // Leds
+    void LedBlink(uint32_t Duration_ms);
     // Events
     void OnUartCmd();
     // Inner use

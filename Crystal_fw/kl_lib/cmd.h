@@ -28,7 +28,6 @@ public:
             if(Cnt != 0) {  // if cmd is not empty
                 IString[Cnt] = 0; // End of string
                 Name = strtok(IString, DELIMITERS);
-                GetNextToken();
                 return pdrNewCmd;
             }
         }

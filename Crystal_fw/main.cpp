@@ -37,11 +37,10 @@ int main(void) {
     // ==== Init hardware ====
     Adc.Init();
     Dac.Init();
-
     // Leds
-    PinSetupOut(LEDS_GPIO, LED_YELLOW_PIN, omPushPull);
-    PinSetupOut(LEDS_GPIO, LED_GREEN_PIN, omPushPull);
-    PinSetupOut(LEDS_GPIO, LED_RED_PIN, omPushPull);
+    PinSetupOut(LEDS_GPIO, LED1_PIN, omPushPull);
+    PinSetupOut(LEDS_GPIO, LED2_PIN, omPushPull);
+    PinSetupOut(LEDS_GPIO, LED3_PIN, omPushPull);
 
     Uart.Init(115200);
     Uart.Printf("\rCrystal AHB=%uMHz APB=%uMHz", Clk.AHBFreqHz/1000000, Clk.APB1FreqHz/1000000);
@@ -75,7 +74,6 @@ void App_t::Init() {
 void App_t::ITask() {
     uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
     if(EvtMsk & EVTMSK_ADC_READY) {
-        LED_YELLOW_ON();
         // ==== Remove DC from input ====
 //        DacOutput = Adc.Rslt; // DEBUG
         static int32_t x1 = 0, y1=0;
@@ -84,21 +82,20 @@ void App_t::ITask() {
         y0 = x0 - x1 + ((9999 * y1) / 10000);
         x1 = x0;
         y1 = y0;
-        y0 = -y0;
         // ==== Filter ====
         y0 = PCurrentFilter->AddXAndCalculate(y0);
         // ==== Output received value ====
         DacOutput = 32768 + y0;
-        LED_YELLOW_OFF();
-        LED_RED_OFF();
+        LED1_OFF();
     }
 
     if(EvtMsk & EVTMSK_USB_READY) {
         Uart.Printf("\rUsbReady");
-        LED_GREEN_ON();
+        LED2_ON();
     }
 
     if(EvtMsk & EVTMSK_USB_DATA_OUT) {
+        LedBlink(54);
         while(UsbUart.ProcessOutData() == pdrNewCmd) OnUartCmd();
     }
 }
@@ -113,12 +110,14 @@ void App_t::OnUartCmd() {
 
 #if 1 // ==== Common ====
     else if(PCmd->NameIs("#SetSmplFreq")) {
+        if(PCmd->GetNextToken() != OK) { UsbUart.Ack(CMD_ERROR); return; }
         if(PCmd->TryConvertTokenToNumber(&dw32) != OK) { UsbUart.Ack(CMD_ERROR); return; }
         SamplingTmr.SetUpdateFrequency(dw32);
         UsbUart.Ack(OK);
     }
 
     else if(PCmd->NameIs("#SetResolution")) {
+        if(PCmd->GetNextToken() != OK) { UsbUart.Ack(CMD_ERROR); return; }
         if((PCmd->TryConvertTokenToNumber(&dw32) != OK) or (dw32 < 1 or dw32 > 16)) { UsbUart.Ack(CMD_ERROR); return; }
         ResolutionMask = 0xFFFF << (16 - dw32);
         UsbUart.Ack(OK);
@@ -139,10 +138,6 @@ void App_t::OnUartCmd() {
         Fir.Reset();
         Fir.ResetCoefs();
         // ==== Coeffs ====
-        // a[0] is mandatory
-        if((PCmd->Token[0] != 'a') or (Convert::TryStrToFloat(&PCmd->Token[1], &Fir.a[0]) != OK)) { UsbUart.Ack(CMD_ERROR); return; }
-        Fir.Sz = 1;
-        // Optional other coefs
         while(PCmd->GetNextToken() == OK and Fir.Sz < FIR_MAX_SZ) {
             if(PCmd->Token[0] == 'a') {
                 if(Convert::TryStrToFloat(&PCmd->Token[1], &Fir.a[Fir.Sz]) == OK) Fir.Sz++;
@@ -152,8 +147,8 @@ void App_t::OnUartCmd() {
         }
         UsbUart.Ack(OK);
         PCurrentFilter = &Fir;
-        Fir.Start();
-        Fir.PrintState();
+        PCurrentFilter->Start();
+//        Fir.PrintState();
     }
 #endif
 
@@ -163,12 +158,8 @@ void App_t::OnUartCmd() {
         Iir.Reset();
         Iir.ResetCoefs();
         // ==== Coeffs ==== b[0] acts as b[1]
-        // a[0] is mandatory
-        if((PCmd->Token[0] != 'a') or (Convert::TryStrToFloat(&PCmd->Token[1], &Iir.a[0]) != OK)) { UsbUart.Ack(CMD_ERROR); return; }
-        Iir.SzA = 1;
-        // Optional other coefs
         while(PCmd->GetNextToken() == OK) {
-//                Uart.Printf("\rToken: %S", PCmd->Token);
+//            Uart.Printf("\rToken: %S", PCmd->Token);
             if(PCmd->Token[0] == 'a') {
                 if(Iir.SzA >= IIR_MAX_SZ) { UsbUart.Ack(CMD_ERROR); return; }   // Too many coefs
                 if(Convert::TryStrToFloat(&PCmd->Token[1], &Iir.a[Iir.SzA]) == OK) Iir.SzA++;
@@ -183,8 +174,8 @@ void App_t::OnUartCmd() {
         }
         UsbUart.Ack(OK);
         PCurrentFilter = &Iir;
-        Iir.Start();
-        Iir.PrintState();
+        PCurrentFilter->Start();
+//        Iir.PrintState();
     }
 #endif
 
@@ -194,18 +185,32 @@ void App_t::OnUartCmd() {
         Notch.Reset();
         // ==== Coeffs ====
         float k1, k2; // Both are mandatory
+        if(PCmd->GetNextToken() != OK)                     { UsbUart.Ack(CMD_ERROR); return; }
         if(Convert::TryStrToFloat(PCmd->Token, &k1) != OK) { UsbUart.Ack(CMD_ERROR); return; }
         if(PCmd->GetNextToken() != OK)                     { UsbUart.Ack(CMD_ERROR); return; }
         if(Convert::TryStrToFloat(PCmd->Token, &k2) != OK) { UsbUart.Ack(CMD_ERROR); return; }
         UsbUart.Ack(OK);
         Notch.Setup(k1, k2);
         PCurrentFilter = &Notch;
-        Notch.Start();
+        PCurrentFilter->Start();
     }
 #endif
 
-
     else if(*PCmd->Name == '#') UsbUart.Ack(CMD_UNKNOWN);  // reply only #-started stuff
+}
+#endif
+
+#if 1 // ============================ LEDs =====================================
+void LedTmrCallback(void *p) {
+    LED3_OFF();
+}
+
+void App_t::LedBlink(uint32_t Duration_ms) {
+    LED3_ON();
+    chSysLock()
+    if(chVTIsArmedI(&Led3Tmr)) chVTResetI(&Led3Tmr);
+    chVTSetI(&Led3Tmr, MS2ST(Duration_ms), LedTmrCallback, nullptr);
+    chSysUnlock();
 }
 #endif
 
@@ -214,7 +219,7 @@ void App_t::OnUartCmd() {
 void App_t::IIrqHandler() {
     Adc.StartDMAMeasure();
     Dac.Set(DacOutput);
-    LED_RED_ON();
+    LED1_ON();
 }
 
 #if 1 // ==== Sampling Timer =====
