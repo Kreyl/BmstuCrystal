@@ -14,9 +14,7 @@ Supported format specifiers:
 %A - pair (uint8_t *arr, int len) as hex array
 */
 
-#ifndef ftVoidChar
 typedef void(*ftVoidChar)(char);
-#endif
 
 #ifdef __cplusplus
 extern "C" {

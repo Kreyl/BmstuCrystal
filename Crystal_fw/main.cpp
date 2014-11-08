@@ -44,6 +44,7 @@ int main(void) {
 
     Uart.Init(115200);
     Uart.Printf("\rCrystal AHB=%uMHz APB=%uMHz", Clk.AHBFreqHz/1000000, Clk.APB1FreqHz/1000000);
+    if(ClkResult != 0) Uart.Printf("\rXTAL failure");
 
     App.Init();
 
@@ -58,7 +59,6 @@ int main(void) {
 
 void App_t::Init() {
     PThread = chThdSelf();
-    PCurrentFilter = &Fir;
     // ==== Analog switch ====
     PinSetupOut(GPIOC, ADG_IN1_PIN, omPushPull, pudNone);
     PinSetupOut(GPIOC, ADG_IN2_PIN, omPushPull, pudNone);
@@ -76,10 +76,9 @@ void App_t::ITask() {
     if(EvtMsk & EVTMSK_ADC_READY) {
         // ==== Remove DC from input ====
 //        DacOutput = Adc.Rslt; // DEBUG
-        static int32_t x1 = 0, y1=0;
+        static int32_t x1 = 0, y1;
         int32_t x0 = Adc.Rslt & ResolutionMask;
-        int32_t y0 = x0 - 32768;
-        y0 = x0 - x1 + ((9999 * y1) / 10000);
+        int32_t y0 = x0 - x1 + ((9999 * y1) / 10000);
         x1 = x0;
         y1 = y0;
         // ==== Filter ====

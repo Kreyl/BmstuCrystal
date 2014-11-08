@@ -233,9 +233,9 @@ uint32_t Random(uint32_t TopValue) {
 void i2cDmaIrqHandler(void *p, uint32_t flags) {
     chSysLockFromIsr();
     //Uart.Printf("===T===");
-    Thread *PThd = ((i2c_t*)p)->PRequestingThread;
-    if (PThd != NULL) {
-        ((i2c_t*)p)->PRequestingThread = NULL;
+    Thread *PThd = static_cast<i2c_t*>(p)->PRequestingThread;
+    if(PThd != NULL) {
+        static_cast<i2c_t*>(p)->PRequestingThread = NULL;
         chSchReadyI(PThd);
     }
     chSysUnlockFromIsr();

@@ -278,10 +278,10 @@ static inline void PinFastOutPP(GPIO_TypeDef *PGpioPort, const uint16_t APinNumb
 
 class PwmPin_t {
 private:
-    uint32_t *PClk;
-    TIM_TypeDef* Tim;
+    uint32_t *PClk = nullptr;
+    TIM_TypeDef* Tim = nullptr;
 public:
-    __IO uint32_t *PCCR;    // Made public to allow DMA
+    __IO uint32_t *PCCR = nullptr;    // Made public to allow DMA
     void SetFreqHz(uint32_t FreqHz);
     void Init(GPIO_TypeDef *GPIO, uint16_t N, uint8_t TimN, uint8_t Chnl, uint16_t TopValue, bool Inverted=false);
     void On(uint16_t Brightness) { *PCCR = Brightness; }
@@ -292,9 +292,9 @@ public:
 enum ExtiTrigType_t {ttRising, ttFalling, ttRisingFalling};
 class IrqPin_t {
 private:
-    uint32_t IIrqChnl;
-    GPIO_TypeDef *IGPIO;
-    uint8_t IPinNumber;
+    uint32_t IIrqChnl = 0;
+    GPIO_TypeDef *IGPIO = nullptr;
+    uint8_t IPinNumber = 0;
 public:
     void SetTriggerType(ExtiTrigType_t ATriggerType) {
         uint32_t IrqMsk = 1 << IPinNumber;
@@ -358,10 +358,10 @@ enum Inverted_t {invNotInverted, invInverted};
 
 class Timer_t {
 private:
-    TIM_TypeDef* ITmr;
-    uint32_t *PClk, Multiplier;
+    TIM_TypeDef* ITmr = nullptr;
+    uint32_t *PClk = nullptr, Multiplier = 0;
 public:
-    __IO uint32_t *PCCR;    // Made public to allow DMA
+    __IO uint32_t *PCCR = nullptr;    // Made public to allow DMA
     // Common
     void Init(TIM_TypeDef* Tmr);
     void Deinit();
@@ -422,7 +422,7 @@ enum SpiBaudrate_t {
 
 class Spi_t {
 private:
-    SPI_TypeDef *PSpi;
+    SPI_TypeDef *PSpi = nullptr;
 public:
     void Setup(SPI_TypeDef *Spi, BitOrder_t BitOrder,
             CPOL_t CPOL, CPHA_t CPHA, SpiBaudrate_t Baudrate) {
@@ -496,11 +496,11 @@ public:
 
 class i2c_t {
 private:
-    uint16_t DmaChnl;
-    I2C_TypeDef *ii2c;
-    GPIO_TypeDef *IPGpio;
-    uint16_t ISclPin, ISdaPin;
-    uint32_t IBitrateHz;
+    uint16_t DmaChnl = 0;
+    I2C_TypeDef *ii2c = nullptr;
+    GPIO_TypeDef *IPGpio = nullptr;
+    uint16_t ISclPin=0, ISdaPin=0;
+    uint32_t IBitrateHz=0;
     void SendStart()  { ii2c->CR1 |= I2C_CR1_START; }
     void SendStop()   { ii2c->CR1 |= I2C_CR1_STOP; }
     void AckEnable()  { ii2c->CR1 |= I2C_CR1_ACK; }
@@ -523,9 +523,9 @@ private:
     uint8_t WaitStop();
     uint8_t WaitBTF();
 public:
-    bool Error;
-    Thread *PRequestingThread;
-    const stm32_dma_stream_t *PDmaTx, *PDmaRx;
+    bool Error=false;
+    Thread *PRequestingThread = nullptr;
+    const stm32_dma_stream_t *PDmaTx = nullptr, *PDmaRx = nullptr;
     void Init(I2C_TypeDef *pi2c, GPIO_TypeDef *PGpio, uint16_t SclPin, uint16_t SdaPin, uint32_t BitrateHz,
             const stm32_dma_stream_t *APDmaTx, const stm32_dma_stream_t *APDmaRx);
     void Standby();

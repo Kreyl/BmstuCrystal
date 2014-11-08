@@ -114,12 +114,8 @@ void CmdUartTxIrq(void *p, uint32_t flags) { Uart.IRQDmaTxHandler(); }
 }
 
 void CmdUart_t::Init(uint32_t ABaudrate) {
-    PWrite = TXBuf;
-    PRead = TXBuf;
-    IDmaIsIdle = true;
-    IFullSlotsCount = 0;
     PinSetupAlterFunc(UART_GPIO, UART_TX_PIN, omPushPull, pudNone, UART_AF);
-
+    IBaudrate = ABaudrate;
     // ==== USART configuration ====
     UART_RCC_ENABLE();
     UART->CR1 = USART_CR1_UE;     // Enable USART
@@ -153,7 +149,6 @@ void CmdUart_t::Init(uint32_t ABaudrate) {
 #endif
     UART->CR1 |= USART_CR1_UE;    // Enable USART
 }
-
 
 void CmdUart_t::OnAHBFreqChange() {
     if(UART == USART1) UART->BRR = Clk.APB2FreqHz / IBaudrate;

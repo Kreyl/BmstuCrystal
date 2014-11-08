@@ -85,6 +85,15 @@ public:
     // Command and reply
     void Ack(int32_t Result) { Printf("\r\n#Ack %d", Result); }
 #endif
+    CmdUart_t() {
+        for(uint32_t i=0; i<UART_TXBUF_SIZE; i++) TXBuf[i] = 0;
+        PWrite = TXBuf;
+        PRead = TXBuf;
+        IDmaIsIdle = true;
+        IFullSlotsCount = 0;
+        ITransSize = 0;
+        IBaudrate = 115200;
+    }
 };
 
 extern CmdUart_t Uart;

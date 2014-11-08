@@ -62,6 +62,7 @@ public:
     // Inner use
     void ITask();
     void IIrqHandler();
+    App_t(): SamplingTmr(), ResolutionMask(0xFFFF), DacOutput(0), Fir(), Iir(), Notch(), PCurrentFilter(&Fir), Led3Tmr(), PThread(nullptr) {}
 };
 
 extern App_t App;

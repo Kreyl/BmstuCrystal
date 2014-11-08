@@ -128,7 +128,7 @@ private:
 public:
     // Settins
     int32_t Sz = 1;
-    float a[FIR_MAX_SZ] = { 1 };
+    float a[FIR_MAX_SZ];
     // Commands
     void Reset() { for(int i=0; i<FIR_MAX_SZ; i++) x[i] = 0; }
     void ResetCoefs() {
@@ -146,6 +146,14 @@ public:
         y0 += x[0] * a[0];
         return roundf(y0);
     }
+    FirFloat_t() {
+        for(int i=0; i<FIR_MAX_SZ; i++) {
+            x[i] = 0;
+            a[i] = 0;
+        }
+        a[0] = 1;
+    }
+
     // For debug purposes
     void PrintState() {
         Uart.Printf("\rSz=%d;\r", Sz);
@@ -163,7 +171,7 @@ private:
 public:
     // Settins
     int32_t SzA = 1, SzB = 0;
-    float a[IIR_MAX_SZ] = { a[0] = 1 };
+    float a[IIR_MAX_SZ];
     float b[IIR_MAX_SZ];
     // Commands
     void Reset() {
@@ -199,6 +207,15 @@ public:
         y[0] = y0;
         return roundf(y0);
     }
+    IirFloat_t() {
+        for(int i=0; i<IIR_MAX_SZ; i++) {
+            x[i] = 0;
+            y[i] = 0;
+            a[i] = 0;
+            b[i] = 0;
+        }
+        a[0] = 1;
+    }
 
     // For debug purposes
     void PrintState() {
@@ -223,6 +240,7 @@ public:
         return b + c1;
     }
     void Put_cIn(float cIn) { c1 = cIn; }
+    AllPass_t(): c1(0), k(0) {}
 };
 
 #endif
@@ -257,6 +275,7 @@ public:
         y0 = (y0 + x0) / 2;
         return roundf(y0);
     }
+    NotchFloat_t() : AllP0(), AllP1()  {}
 };
 #endif
 
