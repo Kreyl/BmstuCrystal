@@ -70,16 +70,6 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.labelHelp = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.comboBoxFdiskr = new System.Windows.Forms.ComboBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.labelStendState = new System.Windows.Forms.Label();
-            this.comboBoxBits = new System.Windows.Forms.ComboBox();
-            this.pictureBoxStendState = new System.Windows.Forms.PictureBox();
-            this.groupBoxBottom = new System.Windows.Forms.GroupBox();
-            this.button_ClearCoefs = new System.Windows.Forms.Button();
-            this.buttonApply = new System.Windows.Forms.Button();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.tabPage_IIR = new System.Windows.Forms.TabPage();
             this.groupBoxIIR_coefs = new System.Windows.Forms.GroupBox();
@@ -129,20 +119,44 @@
             this.comboBox_IIR_order = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage_Notch = new System.Windows.Forms.TabPage();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.textBox_k1 = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.textBox_k2 = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
             this.EtoolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.StatusLabelNewSettings = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStrip2 = new System.Windows.Forms.ToolStrip();
+            this.cbResolution = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.cbFreqSampling = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.btnApply = new System.Windows.Forms.Button();
+            this.btnClear = new System.Windows.Forms.Button();
             tabPage_FIR = new System.Windows.Forms.TabPage();
             tabPage_FIR.SuspendLayout();
             this.groupBoxFIR_coefs.SuspendLayout();
             this.groupBoxFIR_order.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStendState)).BeginInit();
-            this.groupBoxBottom.SuspendLayout();
             this.tabPage_IIR.SuspendLayout();
             this.groupBoxIIR_coefs.SuspendLayout();
             this.groupBoxIIR_order.SuspendLayout();
             this.tabControl1.SuspendLayout();
+            this.tabPage_Notch.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.statusStrip1.SuspendLayout();
+            this.toolStrip2.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabPage_FIR
@@ -152,7 +166,7 @@
             tabPage_FIR.Location = new System.Drawing.Point(4, 22);
             tabPage_FIR.Name = "tabPage_FIR";
             tabPage_FIR.Padding = new System.Windows.Forms.Padding(9, 7, 9, 3);
-            tabPage_FIR.Size = new System.Drawing.Size(579, 372);
+            tabPage_FIR.Size = new System.Drawing.Size(579, 379);
             tabPage_FIR.TabIndex = 0;
             tabPage_FIR.Text = "КИХ-фильтр";
             tabPage_FIR.UseVisualStyleBackColor = true;
@@ -192,7 +206,7 @@
             this.groupBoxFIR_coefs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBoxFIR_coefs.Location = new System.Drawing.Point(9, 70);
             this.groupBoxFIR_coefs.Name = "groupBoxFIR_coefs";
-            this.groupBoxFIR_coefs.Size = new System.Drawing.Size(561, 299);
+            this.groupBoxFIR_coefs.Size = new System.Drawing.Size(561, 306);
             this.groupBoxFIR_coefs.TabIndex = 23;
             this.groupBoxFIR_coefs.TabStop = false;
             this.groupBoxFIR_coefs.Text = "Коэффициенты фильтра";
@@ -205,8 +219,7 @@
             this.textBox_FIR_a0.Size = new System.Drawing.Size(100, 20);
             this.textBox_FIR_a0.TabIndex = 25;
             this.textBox_FIR_a0.Text = "1";
-            this.textBox_FIR_a0.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a0.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a0.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai0
             // 
@@ -237,8 +250,7 @@
             this.textBox_FIR_a1.TabIndex = 28;
             this.textBox_FIR_a1.Text = "0";
             this.textBox_FIR_a1.Visible = false;
-            this.textBox_FIR_a1.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a1.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a1.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai1
             // 
@@ -271,8 +283,7 @@
             this.textBox_FIR_a2.TabIndex = 31;
             this.textBox_FIR_a2.Text = "0";
             this.textBox_FIR_a2.Visible = false;
-            this.textBox_FIR_a2.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a2.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a2.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai2
             // 
@@ -305,8 +316,7 @@
             this.textBox_FIR_a3.TabIndex = 34;
             this.textBox_FIR_a3.Text = "0";
             this.textBox_FIR_a3.Visible = false;
-            this.textBox_FIR_a3.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a3.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a3.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai3
             // 
@@ -339,8 +349,7 @@
             this.textBox_FIR_a4.TabIndex = 37;
             this.textBox_FIR_a4.Text = "0";
             this.textBox_FIR_a4.Visible = false;
-            this.textBox_FIR_a4.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a4.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a4.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai4
             // 
@@ -373,8 +382,7 @@
             this.textBox_FIR_a5.TabIndex = 40;
             this.textBox_FIR_a5.Text = "0";
             this.textBox_FIR_a5.Visible = false;
-            this.textBox_FIR_a5.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a5.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a5.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai5
             // 
@@ -407,8 +415,7 @@
             this.textBox_FIR_a6.TabIndex = 43;
             this.textBox_FIR_a6.Text = "0";
             this.textBox_FIR_a6.Visible = false;
-            this.textBox_FIR_a6.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a6.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a6.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai6
             // 
@@ -441,8 +448,7 @@
             this.textBox_FIR_a7.TabIndex = 46;
             this.textBox_FIR_a7.Text = "0";
             this.textBox_FIR_a7.Visible = false;
-            this.textBox_FIR_a7.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a7.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a7.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai7
             // 
@@ -475,8 +481,7 @@
             this.textBox_FIR_a8.TabIndex = 49;
             this.textBox_FIR_a8.Text = "0";
             this.textBox_FIR_a8.Visible = false;
-            this.textBox_FIR_a8.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a8.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a8.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai8
             // 
@@ -509,8 +514,7 @@
             this.textBox_FIR_a9.TabIndex = 52;
             this.textBox_FIR_a9.Text = "0";
             this.textBox_FIR_a9.Visible = false;
-            this.textBox_FIR_a9.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_FIR_a9.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_FIR_a9.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_FIR_ai9
             // 
@@ -549,7 +553,9 @@
             // comboBox_FIR_order
             // 
             this.comboBox_FIR_order.DisplayMember = "0";
+            this.comboBox_FIR_order.DropDownHeight = 243;
             this.comboBox_FIR_order.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox_FIR_order.IntegralHeight = false;
             this.comboBox_FIR_order.Items.AddRange(new object[] {
             "0",
             "1",
@@ -579,7 +585,9 @@
             // 
             // serialPort
             // 
-            this.serialPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.serialPort_DataReceived);
+            this.serialPort.PortName = "COM7";
+            this.serialPort.ReadBufferSize = 2048;
+            this.serialPort.ReadTimeout = 18;
             // 
             // timerHeartBeat
             // 
@@ -602,6 +610,7 @@
             // 
             this.labelHelp.BackColor = System.Drawing.SystemColors.Window;
             this.labelHelp.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelHelp.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.labelHelp.Location = new System.Drawing.Point(64, 0);
             this.labelHelp.Name = "labelHelp";
             this.labelHelp.Padding = new System.Windows.Forms.Padding(7, 4, 7, 4);
@@ -612,165 +621,13 @@
             // pictureBox1
             // 
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pictureBox1.Image = global::Crystal.Properties.Resources.Corner;
+            this.pictureBox1.Image = global::Crystal.Properties.Resources.icon64x64_copy;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(64, 64);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.comboBoxFdiskr);
-            this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.labelStendState);
-            this.groupBox1.Controls.Add(this.comboBoxBits);
-            this.groupBox1.Controls.Add(this.pictureBoxStendState);
-            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox1.Location = new System.Drawing.Point(0, 64);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(587, 52);
-            this.groupBox1.TabIndex = 4;
-            this.groupBox1.TabStop = false;
-            // 
-            // comboBoxFdiskr
-            // 
-            this.comboBoxFdiskr.DisplayMember = "0";
-            this.comboBoxFdiskr.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxFdiskr.Items.AddRange(new object[] {
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-            "9",
-            "10",
-            "11",
-            "12",
-            "13",
-            "14",
-            "15",
-            "16",
-            "17",
-            "18",
-            "19",
-            "20"});
-            this.comboBoxFdiskr.Location = new System.Drawing.Point(353, 19);
-            this.comboBoxFdiskr.Name = "comboBoxFdiskr";
-            this.comboBoxFdiskr.Size = new System.Drawing.Size(38, 21);
-            this.comboBoxFdiskr.TabIndex = 6;
-            this.comboBoxFdiskr.ValueMember = "0";
-            this.comboBoxFdiskr.SelectedIndexChanged += new System.EventHandler(this.comboBoxFdiskr_SelectedIndexChanged);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(429, 22);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(99, 13);
-            this.label3.TabIndex = 5;
-            this.label3.Text = "Разрядность, бит:";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(193, 22);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(156, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Частота дискретизации, кГц:";
-            // 
-            // labelStendState
-            // 
-            this.labelStendState.AutoSize = true;
-            this.labelStendState.Location = new System.Drawing.Point(26, 22);
-            this.labelStendState.Name = "labelStendState";
-            this.labelStendState.Size = new System.Drawing.Size(110, 13);
-            this.labelStendState.TabIndex = 2;
-            this.labelStendState.Text = "Стенд не подключен";
-            // 
-            // comboBoxBits
-            // 
-            this.comboBoxBits.DisplayMember = "0";
-            this.comboBoxBits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxBits.Items.AddRange(new object[] {
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-            "9",
-            "10",
-            "11",
-            "12",
-            "13",
-            "14",
-            "15",
-            "16"});
-            this.comboBoxBits.Location = new System.Drawing.Point(534, 19);
-            this.comboBoxBits.Name = "comboBoxBits";
-            this.comboBoxBits.Size = new System.Drawing.Size(38, 21);
-            this.comboBoxBits.TabIndex = 1;
-            this.comboBoxBits.ValueMember = "0";
-            this.comboBoxBits.SelectedIndexChanged += new System.EventHandler(this.comboBoxBits_SelectedIndexChanged);
-            // 
-            // pictureBoxStendState
-            // 
-            this.pictureBoxStendState.Image = global::Crystal.Properties.Resources.discon;
-            this.pictureBoxStendState.Location = new System.Drawing.Point(6, 22);
-            this.pictureBoxStendState.Name = "pictureBoxStendState";
-            this.pictureBoxStendState.Size = new System.Drawing.Size(16, 16);
-            this.pictureBoxStendState.TabIndex = 0;
-            this.pictureBoxStendState.TabStop = false;
-            // 
-            // groupBoxBottom
-            // 
-            this.groupBoxBottom.Controls.Add(this.button_ClearCoefs);
-            this.groupBoxBottom.Controls.Add(this.buttonApply);
-            this.groupBoxBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.groupBoxBottom.Location = new System.Drawing.Point(0, 514);
-            this.groupBoxBottom.Name = "groupBoxBottom";
-            this.groupBoxBottom.Padding = new System.Windows.Forms.Padding(9, 3, 9, 9);
-            this.groupBoxBottom.Size = new System.Drawing.Size(587, 59);
-            this.groupBoxBottom.TabIndex = 6;
-            this.groupBoxBottom.TabStop = false;
-            // 
-            // button_ClearCoefs
-            // 
-            this.button_ClearCoefs.Dock = System.Windows.Forms.DockStyle.Left;
-            this.button_ClearCoefs.Image = global::Crystal.Properties.Resources.delete;
-            this.button_ClearCoefs.Location = new System.Drawing.Point(9, 16);
-            this.button_ClearCoefs.Name = "button_ClearCoefs";
-            this.button_ClearCoefs.Size = new System.Drawing.Size(195, 34);
-            this.button_ClearCoefs.TabIndex = 1;
-            this.button_ClearCoefs.Text = "Очистить коэффициенты";
-            this.button_ClearCoefs.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.button_ClearCoefs.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.EtoolTip.SetToolTip(this.button_ClearCoefs, "Сброс в исходное состояние\r\nвсех полей коэффициентов");
-            this.button_ClearCoefs.UseVisualStyleBackColor = true;
-            this.button_ClearCoefs.Click += new System.EventHandler(this.button_ClearCoefs_Click);
-            // 
-            // buttonApply
-            // 
-            this.buttonApply.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonApply.Image = ((System.Drawing.Image)(resources.GetObject("buttonApply.Image")));
-            this.buttonApply.Location = new System.Drawing.Point(358, 16);
-            this.buttonApply.Name = "buttonApply";
-            this.buttonApply.Size = new System.Drawing.Size(220, 34);
-            this.buttonApply.TabIndex = 0;
-            this.buttonApply.Text = "Применить настройки фильтра";
-            this.buttonApply.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.buttonApply.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.EtoolTip.SetToolTip(this.buttonApply, "Передача коэффициентов фильтра стенду");
-            this.buttonApply.UseVisualStyleBackColor = true;
-            this.buttonApply.Click += new System.EventHandler(this.buttonApply_Click);
             // 
             // imageList1
             // 
@@ -778,6 +635,8 @@
             this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
             this.imageList1.Images.SetKeyName(0, "connect1.gif");
             this.imageList1.Images.SetKeyName(1, "discon.gif");
+            this.imageList1.Images.SetKeyName(2, "!3.bmp");
+            this.imageList1.Images.SetKeyName(3, "Checked2.bmp");
             // 
             // tabPage_IIR
             // 
@@ -786,7 +645,7 @@
             this.tabPage_IIR.Location = new System.Drawing.Point(4, 22);
             this.tabPage_IIR.Name = "tabPage_IIR";
             this.tabPage_IIR.Padding = new System.Windows.Forms.Padding(9, 7, 9, 3);
-            this.tabPage_IIR.Size = new System.Drawing.Size(579, 372);
+            this.tabPage_IIR.Size = new System.Drawing.Size(579, 379);
             this.tabPage_IIR.TabIndex = 1;
             this.tabPage_IIR.Text = "БИХ-фильтр";
             this.tabPage_IIR.UseVisualStyleBackColor = true;
@@ -838,7 +697,7 @@
             this.groupBoxIIR_coefs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBoxIIR_coefs.Location = new System.Drawing.Point(9, 70);
             this.groupBoxIIR_coefs.Name = "groupBoxIIR_coefs";
-            this.groupBoxIIR_coefs.Size = new System.Drawing.Size(561, 299);
+            this.groupBoxIIR_coefs.Size = new System.Drawing.Size(561, 306);
             this.groupBoxIIR_coefs.TabIndex = 24;
             this.groupBoxIIR_coefs.TabStop = false;
             this.groupBoxIIR_coefs.Text = "Коэффициенты фильтра";
@@ -849,11 +708,10 @@
             this.textBox_IIR_b6.MaxLength = 9;
             this.textBox_IIR_b6.Name = "textBox_IIR_b6";
             this.textBox_IIR_b6.Size = new System.Drawing.Size(100, 20);
-            this.textBox_IIR_b6.TabIndex = 64;
+            this.textBox_IIR_b6.TabIndex = 62;
             this.textBox_IIR_b6.Text = "0";
             this.textBox_IIR_b6.Visible = false;
-            this.textBox_IIR_b6.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_b6.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_b6.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_bi6
             // 
@@ -883,11 +741,10 @@
             this.textBox_IIR_a6.MaxLength = 9;
             this.textBox_IIR_a6.Name = "textBox_IIR_a6";
             this.textBox_IIR_a6.Size = new System.Drawing.Size(100, 20);
-            this.textBox_IIR_a6.TabIndex = 61;
+            this.textBox_IIR_a6.TabIndex = 43;
             this.textBox_IIR_a6.Text = "0";
             this.textBox_IIR_a6.Visible = false;
-            this.textBox_IIR_a6.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_a6.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_a6.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_ai6
             // 
@@ -917,11 +774,10 @@
             this.textBox_IIR_b5.MaxLength = 9;
             this.textBox_IIR_b5.Name = "textBox_IIR_b5";
             this.textBox_IIR_b5.Size = new System.Drawing.Size(100, 20);
-            this.textBox_IIR_b5.TabIndex = 58;
+            this.textBox_IIR_b5.TabIndex = 59;
             this.textBox_IIR_b5.Text = "0";
             this.textBox_IIR_b5.Visible = false;
-            this.textBox_IIR_b5.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_b5.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_b5.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_bi5
             // 
@@ -951,11 +807,10 @@
             this.textBox_IIR_a5.MaxLength = 9;
             this.textBox_IIR_a5.Name = "textBox_IIR_a5";
             this.textBox_IIR_a5.Size = new System.Drawing.Size(100, 20);
-            this.textBox_IIR_a5.TabIndex = 55;
+            this.textBox_IIR_a5.TabIndex = 40;
             this.textBox_IIR_a5.Text = "0";
             this.textBox_IIR_a5.Visible = false;
-            this.textBox_IIR_a5.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_a5.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_a5.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_ai5
             // 
@@ -985,11 +840,10 @@
             this.textBox_IIR_b4.MaxLength = 9;
             this.textBox_IIR_b4.Name = "textBox_IIR_b4";
             this.textBox_IIR_b4.Size = new System.Drawing.Size(100, 20);
-            this.textBox_IIR_b4.TabIndex = 52;
+            this.textBox_IIR_b4.TabIndex = 56;
             this.textBox_IIR_b4.Text = "0";
             this.textBox_IIR_b4.Visible = false;
-            this.textBox_IIR_b4.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_b4.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_b4.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_bi4
             // 
@@ -1019,11 +873,10 @@
             this.textBox_IIR_b3.MaxLength = 9;
             this.textBox_IIR_b3.Name = "textBox_IIR_b3";
             this.textBox_IIR_b3.Size = new System.Drawing.Size(100, 20);
-            this.textBox_IIR_b3.TabIndex = 49;
+            this.textBox_IIR_b3.TabIndex = 53;
             this.textBox_IIR_b3.Text = "0";
             this.textBox_IIR_b3.Visible = false;
-            this.textBox_IIR_b3.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_b3.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_b3.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_bi3
             // 
@@ -1053,11 +906,10 @@
             this.textBox_IIR_b2.MaxLength = 9;
             this.textBox_IIR_b2.Name = "textBox_IIR_b2";
             this.textBox_IIR_b2.Size = new System.Drawing.Size(100, 20);
-            this.textBox_IIR_b2.TabIndex = 46;
+            this.textBox_IIR_b2.TabIndex = 50;
             this.textBox_IIR_b2.Text = "0";
             this.textBox_IIR_b2.Visible = false;
-            this.textBox_IIR_b2.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_b2.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_b2.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_bi2
             // 
@@ -1087,11 +939,10 @@
             this.textBox_IIR_b1.MaxLength = 9;
             this.textBox_IIR_b1.Name = "textBox_IIR_b1";
             this.textBox_IIR_b1.Size = new System.Drawing.Size(100, 20);
-            this.textBox_IIR_b1.TabIndex = 43;
+            this.textBox_IIR_b1.TabIndex = 47;
             this.textBox_IIR_b1.Text = "0";
             this.textBox_IIR_b1.Visible = false;
-            this.textBox_IIR_b1.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_b1.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_b1.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_bi1
             // 
@@ -1154,8 +1005,7 @@
             this.textBox_IIR_a4.TabIndex = 37;
             this.textBox_IIR_a4.Text = "0";
             this.textBox_IIR_a4.Visible = false;
-            this.textBox_IIR_a4.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_a4.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_a4.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_ai4
             // 
@@ -1188,8 +1038,7 @@
             this.textBox_IIR_a3.TabIndex = 34;
             this.textBox_IIR_a3.Text = "0";
             this.textBox_IIR_a3.Visible = false;
-            this.textBox_IIR_a3.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_a3.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_a3.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_ai3
             // 
@@ -1222,8 +1071,7 @@
             this.textBox_IIR_a2.TabIndex = 31;
             this.textBox_IIR_a2.Text = "0";
             this.textBox_IIR_a2.Visible = false;
-            this.textBox_IIR_a2.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_a2.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_a2.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_ai1
             // 
@@ -1256,8 +1104,7 @@
             this.textBox_IIR_a1.TabIndex = 28;
             this.textBox_IIR_a1.Text = "0";
             this.textBox_IIR_a1.Visible = false;
-            this.textBox_IIR_a1.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_a1.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_a1.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_ai0
             // 
@@ -1287,8 +1134,7 @@
             this.textBox_IIR_a0.Size = new System.Drawing.Size(100, 20);
             this.textBox_IIR_a0.TabIndex = 25;
             this.textBox_IIR_a0.Text = "1";
-            this.textBox_IIR_a0.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBoxCoef_KeyPress);
-            this.textBox_IIR_a0.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxCoef_Validating);
+            this.textBox_IIR_a0.TextChanged += new System.EventHandler(this.textBox_FIR_a0_TextChanged);
             // 
             // label_IIR_ai2
             // 
@@ -1356,22 +1202,271 @@
             // 
             this.tabControl1.Controls.Add(tabPage_FIR);
             this.tabControl1.Controls.Add(this.tabPage_IIR);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(0, 116);
+            this.tabControl1.Controls.Add(this.tabPage_Notch);
+            this.tabControl1.Location = new System.Drawing.Point(0, 94);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(587, 398);
+            this.tabControl1.Size = new System.Drawing.Size(587, 405);
             this.tabControl1.TabIndex = 5;
+            this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
+            // 
+            // tabPage_Notch
+            // 
+            this.tabPage_Notch.Controls.Add(this.groupBox2);
+            this.tabPage_Notch.Location = new System.Drawing.Point(4, 22);
+            this.tabPage_Notch.Name = "tabPage_Notch";
+            this.tabPage_Notch.Size = new System.Drawing.Size(579, 379);
+            this.tabPage_Notch.TabIndex = 2;
+            this.tabPage_Notch.Text = "Режекторный фильтр";
+            this.tabPage_Notch.UseVisualStyleBackColor = true;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.pictureBox2);
+            this.groupBox2.Controls.Add(this.textBox_k1);
+            this.groupBox2.Controls.Add(this.label7);
+            this.groupBox2.Controls.Add(this.label8);
+            this.groupBox2.Controls.Add(this.textBox_k2);
+            this.groupBox2.Controls.Add(this.label17);
+            this.groupBox2.Controls.Add(this.label18);
+            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox2.Location = new System.Drawing.Point(0, 0);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(579, 379);
+            this.groupBox2.TabIndex = 24;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Коэффициенты фильтра";
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+            this.pictureBox2.InitialImage = null;
+            this.pictureBox2.Location = new System.Drawing.Point(8, 111);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(560, 255);
+            this.pictureBox2.TabIndex = 54;
+            this.pictureBox2.TabStop = false;
+            // 
+            // textBox_k1
+            // 
+            this.textBox_k1.Location = new System.Drawing.Point(124, 50);
+            this.textBox_k1.MaxLength = 9;
+            this.textBox_k1.Name = "textBox_k1";
+            this.textBox_k1.Size = new System.Drawing.Size(100, 20);
+            this.textBox_k1.TabIndex = 28;
+            this.textBox_k1.Text = "0";
+            this.textBox_k1.TextChanged += new System.EventHandler(this.textBox_k1_TextChanged);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Times New Roman", 9F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label7.Location = new System.Drawing.Point(105, 61);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(13, 15);
+            this.label7.TabIndex = 53;
+            this.label7.Text = "1";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Times New Roman", 27F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label8.Location = new System.Drawing.Point(82, 35);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(36, 41);
+            this.label8.TabIndex = 29;
+            this.label8.Text = "k";
+            // 
+            // textBox_k2
+            // 
+            this.textBox_k2.Location = new System.Drawing.Point(351, 50);
+            this.textBox_k2.MaxLength = 9;
+            this.textBox_k2.Name = "textBox_k2";
+            this.textBox_k2.Size = new System.Drawing.Size(100, 20);
+            this.textBox_k2.TabIndex = 43;
+            this.textBox_k2.Text = "0";
+            this.textBox_k2.TextChanged += new System.EventHandler(this.textBox_k1_TextChanged);
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Font = new System.Drawing.Font("Times New Roman", 9F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label17.Location = new System.Drawing.Point(332, 61);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(13, 15);
+            this.label17.TabIndex = 42;
+            this.label17.Text = "2";
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Font = new System.Drawing.Font("Times New Roman", 27F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label18.Location = new System.Drawing.Point(309, 35);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(36, 41);
+            this.label18.TabIndex = 41;
+            this.label18.Text = "k";
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StatusLabel,
+            this.StatusLabelNewSettings});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 550);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(587, 23);
+            this.statusStrip1.TabIndex = 7;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // StatusLabel
+            // 
+            this.StatusLabel.AutoSize = false;
+            this.StatusLabel.Name = "StatusLabel";
+            this.StatusLabel.Size = new System.Drawing.Size(150, 18);
+            this.StatusLabel.Text = "Стенд не подключен";
+            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // StatusLabelNewSettings
+            // 
+            this.StatusLabelNewSettings.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.StatusLabelNewSettings.Image = global::Crystal.Properties.Resources._31;
+            this.StatusLabelNewSettings.ImageTransparentColor = System.Drawing.Color.White;
+            this.StatusLabelNewSettings.Margin = new System.Windows.Forms.Padding(27, 3, 0, 2);
+            this.StatusLabelNewSettings.Name = "StatusLabelNewSettings";
+            this.StatusLabelNewSettings.Size = new System.Drawing.Size(145, 18);
+            this.StatusLabelNewSettings.Text = "Есть новые настройки";
+            // 
+            // toolStrip2
+            // 
+            this.toolStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.cbResolution,
+            this.toolStripLabel2,
+            this.toolStripSeparator1,
+            this.cbFreqSampling,
+            this.toolStripLabel1});
+            this.toolStrip2.Location = new System.Drawing.Point(0, 64);
+            this.toolStrip2.Name = "toolStrip2";
+            this.toolStrip2.Size = new System.Drawing.Size(587, 27);
+            this.toolStrip2.TabIndex = 9;
+            this.toolStrip2.Text = "toolStrip2";
+            // 
+            // cbResolution
+            // 
+            this.cbResolution.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.cbResolution.AutoSize = false;
+            this.cbResolution.DropDownHeight = 243;
+            this.cbResolution.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbResolution.DropDownWidth = 38;
+            this.cbResolution.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
+            this.cbResolution.IntegralHeight = false;
+            this.cbResolution.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4",
+            "8",
+            "10",
+            "12",
+            "14",
+            "16"});
+            this.cbResolution.Margin = new System.Windows.Forms.Padding(2, 2, 18, 2);
+            this.cbResolution.Name = "cbResolution";
+            this.cbResolution.Size = new System.Drawing.Size(38, 23);
+            this.cbResolution.SelectedIndexChanged += new System.EventHandler(this.comboBoxBits_SelectedIndexChanged);
+            // 
+            // toolStripLabel2
+            // 
+            this.toolStripLabel2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripLabel2.Name = "toolStripLabel2";
+            this.toolStripLabel2.Size = new System.Drawing.Size(103, 24);
+            this.toolStripLabel2.Text = "Разрядность, бит:";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator1.AutoSize = false;
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(18, 27);
+            // 
+            // cbFreqSampling
+            // 
+            this.cbFreqSampling.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.cbFreqSampling.AutoSize = false;
+            this.cbFreqSampling.DropDownHeight = 243;
+            this.cbFreqSampling.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbFreqSampling.DropDownWidth = 38;
+            this.cbFreqSampling.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
+            this.cbFreqSampling.IntegralHeight = false;
+            this.cbFreqSampling.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "5",
+            "10",
+            "15",
+            "20"});
+            this.cbFreqSampling.Margin = new System.Windows.Forms.Padding(2);
+            this.cbFreqSampling.Name = "cbFreqSampling";
+            this.cbFreqSampling.Size = new System.Drawing.Size(38, 23);
+            this.cbFreqSampling.SelectedIndexChanged += new System.EventHandler(this.comboBoxFdiskr_SelectedIndexChanged);
+            // 
+            // toolStripLabel1
+            // 
+            this.toolStripLabel1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripLabel1.Name = "toolStripLabel1";
+            this.toolStripLabel1.Size = new System.Drawing.Size(163, 24);
+            this.toolStripLabel1.Text = "Частота дискретизации, кГц:";
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.btnApply);
+            this.panel2.Controls.Add(this.btnClear);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel2.Location = new System.Drawing.Point(0, 504);
+            this.panel2.Name = "panel2";
+            this.panel2.Padding = new System.Windows.Forms.Padding(18, 4, 18, 4);
+            this.panel2.Size = new System.Drawing.Size(587, 46);
+            this.panel2.TabIndex = 10;
+            // 
+            // btnApply
+            // 
+            this.btnApply.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnApply.Image = global::Crystal.Properties.Resources.ok;
+            this.btnApply.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnApply.Location = new System.Drawing.Point(371, 4);
+            this.btnApply.Margin = new System.Windows.Forms.Padding(9);
+            this.btnApply.Name = "btnApply";
+            this.btnApply.Padding = new System.Windows.Forms.Padding(11, 0, 0, 0);
+            this.btnApply.Size = new System.Drawing.Size(198, 38);
+            this.btnApply.TabIndex = 1;
+            this.btnApply.Text = "Применить настройки";
+            this.btnApply.UseVisualStyleBackColor = true;
+            this.btnApply.Click += new System.EventHandler(this.buttonApply_Click);
+            // 
+            // btnClear
+            // 
+            this.btnClear.Dock = System.Windows.Forms.DockStyle.Left;
+            this.btnClear.Image = global::Crystal.Properties.Resources.delete;
+            this.btnClear.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnClear.Location = new System.Drawing.Point(18, 4);
+            this.btnClear.Margin = new System.Windows.Forms.Padding(9);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Padding = new System.Windows.Forms.Padding(11, 0, 0, 0);
+            this.btnClear.Size = new System.Drawing.Size(198, 38);
+            this.btnClear.TabIndex = 0;
+            this.btnClear.Text = "Очистить коэффициенты";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.button_ClearCoefs_Click);
             // 
             // MainForm
             // 
-            this.AcceptButton = this.buttonApply;
+            this.AcceptButton = this.btnApply;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(587, 573);
+            this.Controls.Add(this.panel2);
+            this.Controls.Add(this.toolStrip2);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.tabControl1);
-            this.Controls.Add(this.groupBoxBottom);
-            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -1387,17 +1482,23 @@
             this.groupBoxFIR_order.PerformLayout();
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStendState)).EndInit();
-            this.groupBoxBottom.ResumeLayout(false);
             this.tabPage_IIR.ResumeLayout(false);
             this.groupBoxIIR_coefs.ResumeLayout(false);
             this.groupBoxIIR_coefs.PerformLayout();
             this.groupBoxIIR_order.ResumeLayout(false);
             this.groupBoxIIR_order.PerformLayout();
             this.tabControl1.ResumeLayout(false);
+            this.tabPage_Notch.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
+            this.toolStrip2.ResumeLayout(false);
+            this.toolStrip2.PerformLayout();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -1408,14 +1509,6 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label labelHelp;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.ComboBox comboBoxBits;
-        private System.Windows.Forms.PictureBox pictureBoxStendState;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label labelStendState;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.GroupBox groupBoxBottom;
-        private System.Windows.Forms.Button buttonApply;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.TabPage tabPage_IIR;
         private System.Windows.Forms.GroupBox groupBoxIIR_coefs;
@@ -1497,11 +1590,30 @@
         private System.Windows.Forms.Label label_FIR_ai9;
         private System.Windows.Forms.TextBox textBox_FIR_a9;
         private System.Windows.Forms.Label label_FIR_ai1;
-        private System.Windows.Forms.ComboBox comboBoxFdiskr;
         private System.Windows.Forms.ComboBox comboBox_FIR_order;
         private System.Windows.Forms.ComboBox comboBox_IIR_order;
-        private System.Windows.Forms.Button button_ClearCoefs;
         private System.Windows.Forms.ToolTip EtoolTip;
+        private System.Windows.Forms.TabPage tabPage_Notch;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.TextBox textBox_k1;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox textBox_k2;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel StatusLabel;
+        private System.Windows.Forms.ToolStripStatusLabel StatusLabelNewSettings;
+        private System.Windows.Forms.ToolStrip toolStrip2;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
+        private System.Windows.Forms.ToolStripComboBox cbFreqSampling;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel2;
+        private System.Windows.Forms.ToolStripComboBox cbResolution;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Button btnApply;
+        private System.Windows.Forms.Button btnClear;
     }
 }
 
