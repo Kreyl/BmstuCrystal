@@ -1,5 +1,5 @@
 /*
-    ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2015 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@
 /**
  * @brief   OTG_FS FIFO memory size in words.
  */
-#define STM32_OTG1_FIFO_MEM_SIZE        384
+#define STM32_OTG1_FIFO_MEM_SIZE        320
 
 /**
  * @brief   OTG_HS FIFO memory size in words.

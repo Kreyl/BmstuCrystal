@@ -1,5 +1,5 @@
 /*
-    ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2015 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -447,10 +447,10 @@ extern const stm32_dma_stream_t _stm32_dma_streams[STM32_DMA_STREAMS];
 extern "C" {
 #endif
   void dmaInit(void);
-  bool_t dmaStreamAllocate(const stm32_dma_stream_t *dmastp,
-                           uint32_t priority,
-                           stm32_dmaisr_t func,
-                           void *param);
+  bool dmaStreamAllocate(const stm32_dma_stream_t *dmastp,
+                         uint32_t priority,
+                         stm32_dmaisr_t func,
+                         void *param);
   void dmaStreamRelease(const stm32_dma_stream_t *dmastp);
 #ifdef __cplusplus
 }

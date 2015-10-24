@@ -14,12 +14,14 @@ Supported format specifiers:
 %A - pair (uint8_t *arr, int len) as hex array
 */
 
+#ifndef ftVoidChar
 typedef void(*ftVoidChar)(char);
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-int32_t kl_vsprintf(ftVoidChar PPutChar, int32_t MaxLength, const char *format, va_list args);
+uint32_t kl_vsprintf(ftVoidChar PPutChar, uint32_t MaxLength, const char *format, va_list args);
 #ifdef __cplusplus
 }
 #endif

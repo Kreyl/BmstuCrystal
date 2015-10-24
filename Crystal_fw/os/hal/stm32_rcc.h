@@ -1,5 +1,5 @@
 /*
-    ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2015 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -329,6 +329,36 @@
  * @api
  */
 #define rccResetADC3() rccResetAPB2(RCC_APB2RSTR_ADC3RST)
+/** @} */
+
+/**
+ * @name    DAC peripheral specific RCC operations
+ * @{
+ */
+/**
+ * @brief   Enables the DAC1 peripheral clock.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccEnableDAC1(lp) rccEnableAPB1(RCC_APB1ENR_DACEN, lp)
+
+/**
+ * @brief   Disables the DAC1 peripheral clock.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccDisableDAC1(lp) rccDisableAPB1(RCC_APB1ENR_DACEN, lp)
+
+/**
+ * @brief   Resets the DAC1 peripheral.
+ *
+ * @api
+ */
+#define rccResetDAC1() rccResetAPB1(RCC_APB1RSTR_DACRST)
 /** @} */
 
 /**
@@ -663,7 +693,25 @@
  *
  * @api
  */
-#define rccResetOTG_HS() rccResetAHB1(RCC_AHB1RSTR_OTGHSRST)
+#define rccResetOTG_HS() rccResetAHB1(RCC_AHB1RSTR_OTGHRST)
+
+/**
+ * @brief   Enables the OTG_HS peripheral clock.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccEnableOTG_HSULPI(lp) rccEnableAHB1(RCC_AHB1ENR_OTGHSULPIEN, lp)
+
+/**
+ * @brief   Disables the OTG_HS peripheral clock.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccDisableOTG_HSULPI(lp) rccDisableAHB1(RCC_AHB1ENR_OTGHSULPIEN, lp)
 /** @} */
 
 /**
@@ -1096,6 +1144,33 @@
 #define rccResetTIM9() rccResetAPB2(RCC_APB2RSTR_TIM9RST)
 
 /**
+ * @brief   Enables the TIM10 peripheral clock.
+ * @note    The @p lp parameter is ignored in this family.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccEnableTIM10(lp) rccEnableAPB2(RCC_APB2ENR_TIM10EN, lp)
+
+/**
+ * @brief   Disables the TIM10 peripheral clock.
+ * @note    The @p lp parameter is ignored in this family.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccDisableTIM10(lp) rccDisableAPB2(RCC_APB2ENR_TIM10EN, lp)
+
+/**
+ * @brief   Resets the TIM10 peripheral.
+ *
+ * @api
+ */
+#define rccResetTIM10() rccResetAPB2(RCC_APB2RSTR_TIM10RST)
+
+/**
  * @brief   Enables the TIM11 peripheral clock.
  * @note    The @p lp parameter is ignored in this family.
  *
@@ -1148,6 +1223,33 @@
  * @api
  */
 #define rccResetTIM12() rccResetAPB1(RCC_APB1RSTR_TIM12RST)
+
+/**
+ * @brief   Enables the TIM13 peripheral clock.
+ * @note    The @p lp parameter is ignored in this family.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccEnableTIM13(lp) rccEnableAPB1(RCC_APB1ENR_TIM13EN, lp)
+
+/**
+ * @brief   Disables the TIM13 peripheral clock.
+ * @note    The @p lp parameter is ignored in this family.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccDisableTIM13(lp) rccDisableAPB1(RCC_APB1ENR_TIM13EN, lp)
+
+/**
+ * @brief   Resets the TIM13 peripheral.
+ *
+ * @api
+ */
+#define rccResetTIM13() rccResetAPB1(RCC_APB1RSTR_TIM13RST)
 
 /**
  * @brief   Enables the TIM14 peripheral clock.
@@ -1364,6 +1466,77 @@
  * @api
  */
 #define rccResetLTDC() rccResetAPB2(RCC_APB2RSTR_LTDCRST)
+
+/**
+ * @name    DMA2D peripheral specific RCC operations
+ * @{
+ */
+/**
+ * @brief   Enables the DMA2D peripheral clock.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccEnableDMA2D(lp) rccEnableAHB1(RCC_AHB1ENR_DMA2DEN, lp)
+
+/**
+ * @brief   Disables the DMA2D peripheral clock.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#define rccDisableDMA2D(lp) rccDisableAHB1(RCC_AHB1ENR_DMA2DEN, lp)
+
+/**
+ * @brief   Resets the DMA2D peripheral.
+ *
+ * @api
+ */
+#define rccResetDMA2D() rccResetAHB1(RCC_AHB1RSTR_DMA2DRST)
+/** @} */
+
+/**
+ * @name    FSMC peripherals specific RCC operations
+ * @{
+ */
+/**
+ * @brief   Enables the FSMC peripheral clock.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#if defined(STM32_FSMC_IS_FMC)
+  #define rccEnableFSMC(lp) rccEnableAHB3(RCC_AHB3ENR_FMCEN, lp)
+#else
+  #define rccEnableFSMC(lp) rccEnableAHB3(RCC_AHB3ENR_FSMCEN, lp)
+#endif
+
+/**
+ * @brief   Disables the FSMC peripheral clock.
+ *
+ * @param[in] lp        low power enable flag
+ *
+ * @api
+ */
+#if defined(STM32_FSMC_IS_FMC)
+  #define rccDisableFSMC(lp) rccDisableAHB3(RCC_AHB3ENR_FMCEN, lp)
+#else
+  #define rccDisableFSMC(lp) rccDisableAHB3(RCC_AHB3ENR_FSMCEN, lp)
+#endif
+
+/**
+ * @brief   Resets the FSMC peripheral.
+ *
+ * @api
+ */
+#if defined(STM32_FSMC_IS_FMC)
+  #define rccResetFSMC() rccResetAHB3(RCC_AHB3RSTR_FMCRST)
+#else
+  #define rccResetFSMC() rccResetAHB3(RCC_AHB3RSTR_FSMCRST)
+#endif
 /** @} */
 
 /*===========================================================================*/

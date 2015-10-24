@@ -8,7 +8,7 @@
 #ifndef FILTER_H_
 #define FILTER_H_
 
-#include "cmd_uart.h"
+#include "uart.h"
 #include "math.h"
 
 class Filter_t {
@@ -121,7 +121,7 @@ public:
 };
 #endif
 
-#if 1 // ============================ FIR Float ================================
+#if 0 // ============================ FIR Float ================================
 class FirFloat_t : public Filter_t {
 private:
     float x[FIR_MAX_SZ];
@@ -163,7 +163,7 @@ public:
 };
 #endif
 
-#if 1 // ============================ IIR Float ==================================
+#if 0 // ============================ IIR Float ==================================
 class IirFloat_t : public Filter_t {
 private:
     float x[IIR_MAX_SZ];
@@ -227,7 +227,7 @@ public:
 };
 #endif
 
-#if 1 // ============================ All-pass =================================
+#if 0 // ============================ All-pass =================================
 class AllPass_t {
 private:
     float c1;
@@ -245,7 +245,7 @@ public:
 
 #endif
 
-#if 1 // ============================ Notch Float ==============================
+#if 0 // ============================ Notch Float ==============================
 class NotchFloat_t : public Filter_t {
 private:
     AllPass_t AllP0, AllP1;
@@ -317,5 +317,32 @@ public:
 };
 #endif
 
+#if 1 // ========================== Level meter ================================
+template <uint32_t Sz>
+class LvlMtr_t : public Filter_t {
+private:
+    int32_t y1, x[Sz];
+    int32_t *pw, *pr;
+public:
+    void Reset() {
+        y1 = 0;
+        pr = &x[0];
+        pw = &x[Sz-1];
+    }
+    int32_t AddXAndCalculate(int32_t x0) {
+        x0 = ABS(x0);
+        int32_t y0 = x0 + y1 - (*pr);   // Add new x and subtract old x
+        // Store new value and move pointers
+        y1 = y0;
+        *pw = x0;
+        pw++;
+        if(pw >= &x[Sz]) pw = &x[0];
+        pr++;
+        if(pr >= &x[Sz]) pr = &x[0];
+        // return result
+        return y0;
+    }
+};
+#endif
 
 #endif /* FILTER_H_ */

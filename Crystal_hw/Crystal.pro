@@ -1,4 +1,4 @@
-update=06.04.2014 23:54:43
+update=15.07.2015 11:49:55
 last_client=eeschema
 [cvpcb]
 version=1
@@ -34,20 +34,16 @@ LibName5=Tittar_kl
 [eeschema]
 version=1
 LibDir=D:/libs/Kicad
-NetFmtName=PcbnewAdvanced
-RptD_X=0
-RptD_Y=100
-RptLab=1
-LabSize=60
 [eeschema/libraries]
-LibName1=adc_kl
-LibName2=Connectors_kl
-LibName3=dac
-LibName4=OpAmp_kl
-LibName5=pcb_details
-LibName6=Power_kl
-LibName7=st_kl
-LibName8=Tittar_kl
-LibName9=power
-LibName10=cikad-cache
-LibName11=C:/OstrannaStudio/Workspace/BMSTU1/Crystal_hw/sma_l
+LibName1=Crystal-rescue
+LibName2=adc_kl
+LibName3=Connectors_kl
+LibName4=dac
+LibName5=OpAmp_kl
+LibName6=pcb_details
+LibName7=Power_kl
+LibName8=st_kl
+LibName9=Tittar_kl
+LibName10=power
+LibName11=cikad-cache
+LibName12=C:/OstrannaStudio/Workspace/BMSTU1/Crystal_hw/sma_l
