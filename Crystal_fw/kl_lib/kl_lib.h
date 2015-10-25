@@ -300,6 +300,8 @@ protected:
     uint32_t *PClk;
 public:
     // Common
+    Timer_t(TIM_TypeDef *APTimer) : ITmr(APTimer), PClk(nullptr) {}
+    Timer_t() : ITmr(nullptr), PClk(nullptr) {}
     void Init();
     void Deinit();
     void Enable()  { TMR_ENABLE(ITmr); }
@@ -330,9 +332,10 @@ public:
         ITmr->SMCR = tmp;
     }
     // DMA, Irq, Evt
-    void DmaOnTriggerEnable() { ITmr->DIER |= TIM_DIER_TDE; }
+    void EnableDmaOnTrigger() { ITmr->DIER |= TIM_DIER_TDE; }
     void GenerateUpdateEvt()  { ITmr->EGR = TIM_EGR_UG; }
-    void IrqOnTriggerEnable() { ITmr->DIER |= TIM_DIER_UIE; }
+    void EnableIrqOnUpdate()  { ITmr->DIER |= TIM_DIER_UIE; }
+    void EnableIrq(uint32_t IrqChnl, uint32_t IrqPriority) { nvicEnableVector(IrqChnl, IrqPriority); }
     void ClearIrqPendingBit() { ITmr->SR &= ~TIM_SR_UIF;    }
     // PWM
     void InitPwm(GPIO_TypeDef *GPIO, uint16_t N, uint8_t Chnl, uint32_t ATopValue, Inverted_t Inverted, PinOutMode_t OutputType);

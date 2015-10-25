@@ -26,10 +26,41 @@
 #define LED3_PIN        8
 #define LED3_GPIO       GPIOC
 #define LED_CNT			3
+
+// Analog switch
+#define ADG_GPIO		GPIOC
+#define ADG_IN1_PIN     0
+#define ADG_IN2_PIN     1
+
+// ADC
+#define ADC_GPIO    	GPIOA
+#define ADC_CLK     	5
+#define ADC_MISO    	6
+#define ADC_CSK     	4
+
+// DAC
+#define DAC_GPIO    	GPIOB
+#define DAC_MOSI    	15
+#define DAC_CSK     	12
+#define DAC_CLK     	13
+
+#define DAC_DMA         STM32_DMA2_STREAM3
+#define DAC_DMA_CHNL    3
+
+#endif
+
+#if 1 // ========================= Timer =======================================
+#define SAMPLING_TMR			TIM5
+#define SAMPLING_TMR_IRQ		TIM5_IRQn
+#define SAMPLING_TMR_IRQHandler	STM32_TIM5_HANDLER
 #endif
 
 #if 1 // =========================== SPI =======================================
-#define PCM_DATA_SPI_RccEnable() rccEnableSPI2(FALSE);
+// ADC
+#define ADC_SPI     	SPI1
+
+// DAC
+#define DAC_SPI     	SPI2
 
 #endif
 
@@ -45,6 +76,9 @@
 #define UART_DMA_RX     STM32_DMA2_STREAM5
 #define UART_DMA_CHNL   4
 
+// ADC
+#define ADC_DMA         STM32_DMA2_STREAM0
+#define ADC_DMA_CHNL    3
 
 #endif
 

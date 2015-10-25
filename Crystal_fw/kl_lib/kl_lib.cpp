@@ -121,17 +121,26 @@ void Timer_t::InitPwm(GPIO_TypeDef *GPIO, uint16_t N, uint8_t Chnl, uint32_t ATo
 
 void Timer_t::SetUpdateFrequency(uint32_t FreqHz) {
 #if defined STM32F2XX || defined STM32F4XX
-    uint32_t UpdFreqMax;
     if(ANY_OF_5(ITmr, TIM1, TIM8, TIM9, TIM10, TIM11))  // APB2 is clock src
-        UpdFreqMax = (*PClk) * Clk.TimerAPB2ClkMulti / (ITmr->ARR + 1);
+    	SetTopValue((*PClk * Clk.TimerAPB2ClkMulti) / FreqHz);
     else // APB1 is clock src
-        UpdFreqMax = (*PClk) * Clk.TimerAPB1ClkMulti / (ITmr->ARR + 1);
+    	SetTopValue((*PClk * Clk.TimerAPB1ClkMulti) / FreqHz);
 #else
     uint32_t UpdFreqMax = *PClk / (ITmr->ARR + 1);
 #endif
-    uint32_t div = UpdFreqMax / FreqHz;
-    if(div != 0) div--;
-    ITmr->PSC = div;
+	ITmr->CNT = 0;  // Reset counter to start from scratch
+//#if defined STM32F2XX || defined STM32F4XX
+//    uint32_t UpdFreqMax;
+//    if(ANY_OF_5(ITmr, TIM1, TIM8, TIM9, TIM10, TIM11))  // APB2 is clock src
+//        UpdFreqMax = (*PClk) * Clk.TimerAPB2ClkMulti / (ITmr->ARR + 1);
+//    else // APB1 is clock src
+//        UpdFreqMax = (*PClk) * Clk.TimerAPB1ClkMulti / (ITmr->ARR + 1);
+//#else
+//    uint32_t UpdFreqMax = *PClk / (ITmr->ARR + 1);
+//#endif
+//    uint32_t div = UpdFreqMax / FreqHz;
+//    if(div != 0) div--;
+//    ITmr->PSC = div;
 //    Uart.Printf("\r  FMax=%u; div=%u", UpdFreqMax, div);
 }
 #endif

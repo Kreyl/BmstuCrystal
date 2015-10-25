@@ -23,7 +23,13 @@
 class App_t {
 private:
     thread_t *PThread;
+    uint16_t ResolutionMask = 0xFFFF;
 public:
+    void Init();
+    // Output switch
+    void OutputFilterOn()  { PinClear(ADG_GPIO, ADG_IN1_PIN); PinClear(ADG_GPIO, ADG_IN2_PIN); }
+    void OutputFilterOff() { PinSet  (ADG_GPIO, ADG_IN1_PIN); PinSet  (ADG_GPIO, ADG_IN2_PIN); }
+
     // Eternal methods
     void InitThread() { PThread = chThdGetSelfX(); }
     void SignalEvt(eventmask_t Evt) {
