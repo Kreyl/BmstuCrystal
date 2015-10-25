@@ -66,12 +66,9 @@ void App_t::ITask() {
 #endif
         if(EvtMsk & EVTMSK_UART_NEW_CMD) {
             OnCmd((Shell_t*)&Uart);
-            Uart.SignalCmdProcessed();
         }
         if(EvtMsk & EVTMSK_USB_NEW_CMD) {
-//        	Uart.Printf("\rMNC");
             OnCmd((Shell_t*)&UsbCDC);
-        	UsbCDC.SignalCmdProcessed();
         }
 
     } // while true
@@ -86,6 +83,8 @@ void App_t::OnCmd(Shell_t *PShell) {
     if(PCmd->NameIs("Ping")) PShell->Ack(OK);
 
     else PShell->Ack(CMD_UNKNOWN);
+
+    PShell->SignalCmdProcessed();
 }
 
 
