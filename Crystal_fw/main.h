@@ -22,8 +22,12 @@
 
 class App_t {
 private:
-    thread_t *PThread;
     uint16_t ResolutionMask = 0xFFFF;
+    FirFloat_t Fir;
+    IirFloat_t Iir;
+    NotchFloat_t Notch;
+    Filter_t *PCurrentFilter;
+    thread_t *PThread;
 public:
     void Init();
     // Output switch
@@ -41,6 +45,8 @@ public:
     void OnCmd(Shell_t *PShell);
     // Inner use
     void ITask();
+    App_t(): ResolutionMask(0xFFFF), Fir(), Iir(), Notch(),
+    		PCurrentFilter(&Fir), PThread(nullptr) {}
 };
 
 extern App_t App;

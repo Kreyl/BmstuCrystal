@@ -568,4 +568,11 @@ inline uint32_t BuildUint32(uint8_t Lo, uint8_t MidLo, uint8_t MidHi, uint8_t Hi
     return r;
 }
 
+// ==== Float ====
+uint8_t TryStrToFloat(char* S, float *POutput) {
+    if(*S == '\0') return EMPTY_STRING;
+    char *p;
+    *POutput = strtof(S, &p);
+    return (*p == '\0')? OK : NOT_A_NUMBER;
+}
 }; // namespace

@@ -124,6 +124,7 @@ uint8_t TryStrToUInt32(char* S, uint32_t *POutput);
 uint8_t TryStrToInt32(char* S, int32_t *POutput);
 uint16_t BuildUint16(uint8_t Lo, uint8_t Hi);
 uint32_t BuildUint32(uint8_t Lo, uint8_t MidLo, uint8_t MidHi, uint8_t Hi);
+uint8_t TryStrToFloat(char* S, float *POutput);
 }; // namespace
 
 // Init, to calm compiler
