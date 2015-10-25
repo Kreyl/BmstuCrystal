@@ -14,6 +14,7 @@
 #include "evt_mask.h"
 #include "filter.h"
 #include "kl_buf.h"
+#include "shell.h"
 #include "board.h"
 
 #define APP_NAME            "Crystal"
@@ -31,7 +32,7 @@ public:
         chSysUnlock();
     }
     void SignalEvtI(eventmask_t Evt) { chEvtSignalI(PThread, Evt); }
-    void OnUartCmd(Uart_t *PUart);
+    void OnCmd(Shell_t *PShell);
     // Inner use
     void ITask();
 };

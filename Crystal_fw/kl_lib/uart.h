@@ -11,7 +11,7 @@
 #include <kl_lib.h>
 #include "kl_sprintf.h"
 #include <cstring>
-#include "cmd.h"
+#include "shell.h"
 #include "board.h"
 
 // Set to true if RX needed
@@ -42,12 +42,9 @@
                             STM32_DMA_CR_MINC |       /* Memory pointer increase */ \
                             STM32_DMA_CR_DIR_P2M |    /* Direction is peripheral to memory */ \
                             STM32_DMA_CR_CIRC         /* Circular buffer enable */
-
-
-typedef Cmd_t<99> UartCmd_t;
 #endif
 
-class Uart_t {
+class Uart_t : public Shell_t {
 private:
     uint32_t IBaudrate;
 #if UART_USE_DMA
@@ -60,7 +57,6 @@ private:
 #if UART_RX_ENABLED
     int32_t SzOld, RIndx;
     uint8_t IRxBuf[UART_RXBUF_SZ];
-    thread_t *IPThd;
 #endif
 public:
 #if UART_RX_ENABLED
@@ -88,12 +84,7 @@ public:
     void IPrintf(const char *format, va_list args);
 #endif
 #if UART_RX_ENABLED
-    UartCmd_t Cmd;
-    void SignalCmdProcessed();
     void IRxTask();
-    // Command and reply
-    void Reply(const char* CmdCode, int32_t Data) { Printf("%S,%d\r\n", CmdCode, Data); }
-    void Ack(int32_t Result) { Printf("\r\nAck %d\r\n", Result); }
 #endif
 };
 

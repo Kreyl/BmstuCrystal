@@ -116,7 +116,6 @@ void PrintfCNow(const char *format, ...) {
 #if UART_RX_ENABLED
 __attribute__((__noreturn__))
 void Uart_t::IRxTask() {
-    IPThd = chThdGetSelfX();
     while(true) {
         chThdSleepMilliseconds(UART_RX_POLLING_MS);
         // Get number of bytes to process
@@ -126,7 +125,6 @@ void Uart_t::IRxTask() {
         int32_t Sz = UART_RXBUF_SZ - UART_DMA_RX->channel->CNDTR;   // Number of bytes copied to buffer since restart
 #endif
         if(Sz != SzOld) {
-
             int32_t ByteCnt = Sz - SzOld;
             if(ByteCnt < 0) ByteCnt += UART_RXBUF_SZ;   // Handle buffer circulation
             SzOld = Sz;
@@ -143,12 +141,6 @@ void Uart_t::IRxTask() {
             } // for
         } // if sz
     } // while true
-}
-
-void Uart_t::SignalCmdProcessed() {
-    chSysLock();
-    if(IPThd->p_state == CH_STATE_SUSPENDED) chSchReadyI(IPThd);
-    chSysUnlock();
 }
 
 static THD_WORKING_AREA(waUartRxThread, 128);
@@ -193,7 +185,7 @@ void Uart_t::Init(uint32_t ABaudrate, GPIO_TypeDef *PGpioTx, const uint16_t APin
     dmaStreamSetMode      (UART_DMA_RX, UART_DMA_RX_MODE);
     dmaStreamEnable       (UART_DMA_RX);
     // Thread
-    chThdCreateStatic(waUartRxThread, sizeof(waUartRxThread), LOWPRIO, UartRxThread, NULL);
+    IPThd = chThdCreateStatic(waUartRxThread, sizeof(waUartRxThread), LOWPRIO, UartRxThread, NULL);
 #else
     UART->CR1 = USART_CR1_TE;     // Transmitter enabled
 #if UART_USE_DMA

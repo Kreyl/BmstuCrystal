@@ -41,8 +41,9 @@ int main(void) {
     for(uint8_t i=0; i<LED_CNT; i++) Led[i].Init();
 
     // ==== USB ====
-//    UsbCDC.Init();
-//    UsbCDC.Connect();
+    UsbCDC.Init();
+    chThdSleepMilliseconds(540);
+    UsbCDC.Connect();
 
     // Main cycle
     App.ITask();
@@ -64,22 +65,27 @@ void App_t::ITask() {
 
 #endif
         if(EvtMsk & EVTMSK_UART_NEW_CMD) {
-            OnUartCmd(&Uart);
+            OnCmd((Shell_t*)&Uart);
             Uart.SignalCmdProcessed();
+        }
+        if(EvtMsk & EVTMSK_USB_NEW_CMD) {
+//        	Uart.Printf("\rMNC");
+            OnCmd((Shell_t*)&UsbCDC);
+        	UsbCDC.SignalCmdProcessed();
         }
 
     } // while true
 }
 
 #if 1 // ======================= Command processing ============================
-void App_t::OnUartCmd(Uart_t *PUart) {
-    UartCmd_t *PCmd = &PUart->Cmd;
+void App_t::OnCmd(Shell_t *PShell) {
+	Cmd_t *PCmd = &PShell->Cmd;
     __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
-    Uart.Printf("\r%S\r", PCmd->Name);
+    PShell->Printf("\r%S", PCmd->Name);
     // Handle command
-    if(PCmd->NameIs("Ping")) PUart->Ack(OK);
+    if(PCmd->NameIs("Ping")) PShell->Ack(OK);
 
-    else PUart->Ack(CMD_UNKNOWN);
+    else PShell->Ack(CMD_UNKNOWN);
 }
 
 

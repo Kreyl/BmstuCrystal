@@ -1,24 +1,24 @@
 /*
- * cmd.h
+ * shell.h
  *
- *  Created on: 26 сент. 2014 г.
- *      Author: g.kruglov
+ *  Created on: 25 окт. 2015 г.
+ *      Author: Kreyl
  */
 
-#ifndef CMD_H_
-#define CMD_H_
+#ifndef KL_LIB_SHELL_H_
+#define KL_LIB_SHELL_H_
 
-#include "hal.h"
 #include <cstring>
+#include "kl_lib.h"
 
+#define CMD_BUF_SZ		99
 #define DELIMITERS      " ,"
 
 enum ProcessDataResult_t {pdrProceed, pdrNewCmd};
 
-template <uint32_t BufSz>
 class Cmd_t {
 private:
-    char IString[BufSz];
+    char IString[CMD_BUF_SZ];
     uint32_t Cnt;
     bool Completed;
 public:
@@ -39,7 +39,7 @@ public:
                 return pdrNewCmd;
             }
         }
-        else if(Cnt < BufSz-1) IString[Cnt++] = c;  // Add char if buffer not full
+        else if(Cnt < (CMD_BUF_SZ-1)) IString[Cnt++] = c;  // Add char if buffer not full
         return pdrProceed;
     }
     uint8_t GetNextTokenString() {
@@ -62,8 +62,23 @@ public:
         Completed = false;
         Name = nullptr;
         Token = nullptr;
-//        for(uint32_t i=0; i<BufSz; i++) IString[i] = 0;
     }
 };
 
-#endif /* CMD_H_ */
+class Shell_t {
+protected:
+	thread_t *IPThd;
+public:
+	Cmd_t Cmd;
+	void SignalCmdProcessed() {
+	    chSysLock();
+	    if(IPThd->p_state == CH_STATE_SUSPENDED) chSchReadyI(IPThd);
+	    chSysUnlock();
+	}
+
+	virtual void Printf(const char *S, ...);
+	void Reply(const char* CmdCode, int32_t Data) { Printf("%S,%d\r\n", CmdCode, Data); }
+	void Ack(int32_t Result) { Printf("\r\nAck %d\r\n", Result); }
+};
+
+#endif /* KL_LIB_SHELL_H_ */

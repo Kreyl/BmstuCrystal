@@ -10,8 +10,9 @@
 
 // Event masks
 #define EVTMSK_UART_NEW_CMD     EVENT_MASK(1)
+#define EVTMSK_USB_NEW_CMD      EVENT_MASK(2)
 
-#define EVTMSK_USB_DATA_OUT     EVENT_MASK(2)
+#define EVTMSK_USB_DATA_OUT     EVENT_MASK(3)
 #define EVTMSK_USB_READY        EVENT_MASK(10)
 #define EVTMSK_USB_SUSPEND      EVENT_MASK(11)
 

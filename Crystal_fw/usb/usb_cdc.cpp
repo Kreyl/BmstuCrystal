@@ -75,8 +75,6 @@ static void usb_event(USBDriver *usbp, usbevent_t event) {
             return;
     } // switch
 }
-
-
 #endif
 
 #if 1  // ==== USB driver configuration ====
@@ -96,15 +94,6 @@ const SerialUSBConfig SerUsbCfg = {
 };
 #endif
 
-void UsbCDC_t::Init() {
-    // GPIO
-    PinSetupAlterFunc(GPIOA, 11, omOpenDrain, pudNone, AF10);
-    PinSetupAlterFunc(GPIOA, 12, omOpenDrain, pudNone, AF10);
-    // Objects
-    sduObjectInit(&SDU2);
-    sduStart(&SDU2, &SerUsbCfg);
-}
-
 void UsbCDC_t::Connect() {
     usbDisconnectBus(SerUsbCfg.usbp);
     chThdSleepMilliseconds(1500);
@@ -117,23 +106,43 @@ static inline void uFPutChar(char c) {
 }
 
 void UsbCDC_t::Printf(const char *format, ...) {
-    chSysLock();
     va_list args;
     va_start(args, format);
-    IPrintf(format, args);
-    va_end(args);
-    chSysUnlock();
-}
-
-void UsbCDC_t::PrintfI(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    IPrintf(format, args);
-    va_end(args);
-}
-
-void UsbCDC_t::IPrintf(const char *format, va_list args) {
     kl_vsprintf(uFPutChar, 0xFFFF, format, args);
-
+    va_end(args);
 }
 
+#if 1 // ================================ RX =================================
+__attribute__((__noreturn__))
+void UsbCDC_t::IRxTask() {
+    while(true) {
+    	msg_t r = SDU2.vmt->get(&UsbCDC.SDU2);
+    	if(r > 0) {
+    		if(Cmd.PutChar((char)r) == pdrNewCmd) {
+				chSysLock();
+				App.SignalEvtI(EVTMSK_USB_NEW_CMD);
+				chSchGoSleepS(CH_STATE_SUSPENDED); // Wait until cmd processed
+				chSysUnlock();  // Will be here when application signals that cmd processed
+			}
+    	} // if byte rx
+    } // while true
+}
+
+static THD_WORKING_AREA(waUsbCDCThread, 128);
+__attribute__((__noreturn__))
+static void UsbCDCThread(void *arg) {
+    chRegSetThreadName("UsbCDCRx");
+    UsbCDC.IRxTask();
+}
+#endif
+
+void UsbCDC_t::Init() {
+    // GPIO
+    PinSetupAlterFunc(GPIOA, 11, omOpenDrain, pudNone, AF10);
+    PinSetupAlterFunc(GPIOA, 12, omOpenDrain, pudNone, AF10);
+    // Objects
+    sduObjectInit(&SDU2);
+    sduStart(&SDU2, &SerUsbCfg);
+    // Thread
+    IPThd = chThdCreateStatic(waUsbCDCThread, sizeof(waUsbCDCThread), NORMALPRIO, UsbCDCThread, NULL);
+}
