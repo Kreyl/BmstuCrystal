@@ -111,6 +111,7 @@ void App_t::ITask() {
 
 #if 1 // ======================= Command processing ============================
 void App_t::OnCmd(Shell_t *PShell) {
+    Led[2].SetHi();
 	Cmd_t *PCmd = &PShell->Cmd;
     __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
 //    Uart.Printf("\r%S", PCmd->Name);
@@ -119,18 +120,22 @@ void App_t::OnCmd(Shell_t *PShell) {
 
 #if 1 // ==== Common ====
     else if(PCmd->NameIs("#SetSmplFreq")) {
-        if(PCmd->GetNextNumber(&dw32) != OK) { PShell->Ack(CMD_ERROR); return; }
-        SamplingTmr.SetUpdateFrequency(dw32);
-        PShell->Ack(OK);
+        if(PCmd->GetNextNumber(&dw32) == OK) {
+            SamplingTmr.SetUpdateFrequency(dw32);
+            PShell->Ack(OK);
+        }
+        else PShell->Ack(CMD_ERROR);
     }
 
     else if(PCmd->NameIs("#SetResolution")) {
-        if(PCmd->GetNextNumber(&dw32) != OK) { PShell->Ack(CMD_ERROR); return; }
-        else if(dw32 < 1 or dw32 > 16) { PShell->Ack(CMD_ERROR); return; }
-        else {
-        	ResolutionMask = 0xFFFF << (16 - dw32);
-        	PShell->Ack(OK);
+        if(PCmd->GetNextNumber(&dw32) == OK) {
+            if(dw32 >= 1 and dw32 <= 16) {
+                ResolutionMask = 0xFFFF << (16 - dw32);
+                PShell->Ack(OK);
+            }
+            else PShell->Ack(CMD_ERROR);
         }
+        else PShell->Ack(CMD_ERROR);
     }
 
     // Output analog filter
@@ -151,9 +156,9 @@ void App_t::OnCmd(Shell_t *PShell) {
         while(PCmd->GetNextTokenString() == OK and Fir.Sz < FIR_MAX_SZ) {
             if(PCmd->Token[0] == 'a') {
                 if(Convert::TryStrToFloat(&PCmd->Token[1], &Fir.a[Fir.Sz]) == OK) Fir.Sz++;
-                else { PShell->Ack(CMD_ERROR); return; }    // error converting
+                else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // error converting
             }
-            else { PShell->Ack(CMD_ERROR); return; }    // != 'a'
+            else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // != 'a'
         }
         PShell->Ack(OK);
         PCurrentFilter = &Fir;
@@ -171,16 +176,16 @@ void App_t::OnCmd(Shell_t *PShell) {
         while(PCmd->GetNextTokenString() == OK) {
 //            Uart.Printf("\rToken: %S", PCmd->Token);
             if(PCmd->Token[0] == 'a') {
-                if(Iir.SzA >= IIR_MAX_SZ) { PShell->Ack(CMD_ERROR); return; }   // Too many coefs
+                if(Iir.SzA >= IIR_MAX_SZ) { PShell->Ack(CMD_ERROR); goto CmdEnd; }   // Too many coefs
                 if(Convert::TryStrToFloat(&PCmd->Token[1], &Iir.a[Iir.SzA]) == OK) Iir.SzA++;
-                else { PShell->Ack(CMD_ERROR); return; }    // error converting
+                else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // error converting
             }
             else if(PCmd->Token[0] == 'b') {
-                if(Iir.SzB >= IIR_MAX_SZ) { PShell->Ack(CMD_ERROR); return; }   // Too many coefs
+                if(Iir.SzB >= IIR_MAX_SZ) { PShell->Ack(CMD_ERROR); goto CmdEnd; }   // Too many coefs
                 if(Convert::TryStrToFloat(&PCmd->Token[1], &Iir.b[Iir.SzB]) == OK) Iir.SzB++;
-                else { PShell->Ack(CMD_ERROR); return; }    // error converting
+                else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // error converting
             }
-            else { PShell->Ack(CMD_ERROR); return; }    // != 'a'
+            else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // != 'a'
         }
         PShell->Ack(OK);
         PCurrentFilter = &Iir;
@@ -195,10 +200,10 @@ void App_t::OnCmd(Shell_t *PShell) {
         Notch.Reset();
         // ==== Coeffs ====
         float k1, k2; // Both are mandatory
-        if(PCmd->GetNextTokenString() != OK)               { PShell->Ack(CMD_ERROR); return; }
-        if(Convert::TryStrToFloat(PCmd->Token, &k1) != OK) { PShell->Ack(CMD_ERROR); return; }
-        if(PCmd->GetNextTokenString() != OK)               { PShell->Ack(CMD_ERROR); return; }
-        if(Convert::TryStrToFloat(PCmd->Token, &k2) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(PCmd->GetNextTokenString() != OK)               { PShell->Ack(CMD_ERROR); goto CmdEnd; }
+        if(Convert::TryStrToFloat(PCmd->Token, &k1) != OK) { PShell->Ack(CMD_ERROR); goto CmdEnd; }
+        if(PCmd->GetNextTokenString() != OK)               { PShell->Ack(CMD_ERROR); goto CmdEnd; }
+        if(Convert::TryStrToFloat(PCmd->Token, &k2) != OK) { PShell->Ack(CMD_ERROR); goto CmdEnd; }
         PShell->Ack(OK);
         Notch.Setup(k1, k2);
         PCurrentFilter = &Notch;
@@ -207,10 +212,10 @@ void App_t::OnCmd(Shell_t *PShell) {
 #endif
 
     else PShell->Ack(CMD_UNKNOWN);
-
+CmdEnd:
+    Led[2].SetLo();
     PShell->SignalCmdProcessed();
 }
-
 #endif
 
 #if 1 // ============================= IRQ =====================================

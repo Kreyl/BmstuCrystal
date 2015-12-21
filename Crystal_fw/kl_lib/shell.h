@@ -78,7 +78,7 @@ public:
 
 	virtual void Printf(const char *S, ...);
 	void Reply(const char* CmdCode, int32_t Data) { Printf("#%S,%d\r\n", CmdCode, Data); }
-	void Ack(int32_t Result) { Printf("\r\n#Ack %d", Result); }
+	void Ack(int32_t Result) { Printf("#Ack %d\r\n", Result); }
 };
 
 #endif /* KL_LIB_SHELL_H_ */

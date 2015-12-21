@@ -51,7 +51,7 @@ uint16_t Adc_t::Measure() {
 
 void Adc_t::StartDMAMeasure() {
     (void)ADC_SPI->DR;  // Clear input register
-    dmaStreamSetMemory0(ADC_DMA, &Rslt);
+    dmaStreamSetMemory0(ADC_DMA, &IRslt);
     dmaStreamSetTransactionSize(ADC_DMA, 3);
     dmaStreamSetMode(ADC_DMA, ADC_DMA_MODE);
     dmaStreamEnable(ADC_DMA);
@@ -64,9 +64,10 @@ void Adc_t::IrqDmaHandler() {
     ISpi.Disable();
     CskHi();
     dmaStreamDisable(ADC_DMA);
-    Rslt = __REV(Rslt);
-    Rslt >>= 10;
-    Rslt &= 0xFFFF;
+    IRslt = __REV(IRslt);
+    IRslt >>= 10;
+    IRslt &= 0xFFFF;
+    Rslt = IRslt;
 //    Uart.Printf("%u\r", Rslt);
     App.SignalEvtI(EVTMSK_ADC_READY);
     chSysUnlockFromISR();
