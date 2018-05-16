@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name adc_kl)(type Legacy)(uri ${KICAD_SYMBOL_DIR}/adc_kl.lib)(options "")(descr ""))
+  (lib (name dac)(type Legacy)(uri ${KICAD_SYMBOL_DIR}/dac.lib)(options "")(descr ""))
+  (lib (name OpAmp_kl)(type Legacy)(uri ${KICAD_SYMBOL_DIR}/OpAmp_kl.lib)(options "")(descr ""))
+)

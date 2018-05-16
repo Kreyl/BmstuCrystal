@@ -1,5 +1,5 @@
-update=15.07.2015 11:49:55
-last_client=eeschema
+update=16.05.2018 18:10:02
+last_client=kicad
 [cvpcb]
 version=1
 NetIExt=net
@@ -33,17 +33,14 @@ LibName4=Power_kl
 LibName5=Tittar_kl
 [eeschema]
 version=1
-LibDir=D:/libs/Kicad
-[eeschema/libraries]
-LibName1=Crystal-rescue
-LibName2=adc_kl
-LibName3=Connectors_kl
-LibName4=dac
-LibName5=OpAmp_kl
-LibName6=pcb_details
-LibName7=Power_kl
-LibName8=st_kl
-LibName9=Tittar_kl
-LibName10=power
-LibName11=cikad-cache
-LibName12=C:/OstrannaStudio/Workspace/BMSTU1/Crystal_hw/sma_l
+LibDir=
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=Pcbnew
+SpiceAjustPassiveValues=0
+LabSize=50
+ERC_TestSimilarLabels=1
