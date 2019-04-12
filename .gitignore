@@ -1,3 +1,7 @@
 Crystal_fw/.settings/language.settings.xml
 Crystal_hw/cikad.bak
 old/
+Crystal_hw/.Crystal.fsxview
+*.bak
+*.dsn
+*.ses
