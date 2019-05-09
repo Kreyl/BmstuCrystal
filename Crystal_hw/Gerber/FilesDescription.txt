@@ -1,8 +1,0 @@
-cikad-Front.gtl      - GERBER-файл верхнего слоя платы
-cikad-Back.gbl       - GERBER-файл нижнего слоя платы
-cikad-F_Mask.gts     - GERBER-файл маски верхнего слоя платы
-cikad -B_Mask.gbs    - GERBER-файл маски нижнего слоя платы 
-cikad-Edge_Cuts.gbr  - GERBER-файл контура платы
-cikad-F_SilkS.gto    - GERBER-файл шелкографии верхнего слоя платы
-cikad.drl            - файл листа сверловки
-other_formats.xls    - заполненная карта заказа с сайта

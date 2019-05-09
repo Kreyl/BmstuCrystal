@@ -7,30 +7,29 @@
 
 #include "adc_ads8320.h"
 #include "uart.h"
-#include "core_cmInstr.h"
 #include "main.h"
+#include "MsgQ.h"
 
 Adc_t Adc;
 
-extern "C" {
 // DMA irq
+extern "C"
 void SIrqDmaHandler(void *p, uint32_t flags) { Adc.IrqDmaHandler(); }
-} // extern c
 
 void Adc_t::Init() {
-    PinSetupOut(ADC_GPIO, ADC_CSK, omPushPull, pudNone);
-    PinSetupAlterFunc(ADC_GPIO, ADC_CLK, omPushPull, pudNone, AF5);
-    PinSetupAlterFunc(ADC_GPIO, ADC_MISO, omPushPull, pudNone, AF5);
+    PinSetupOut(ADC_CS, omPushPull);
+    PinSetupAlterFunc(ADC_CLK, omPushPull, pudNone, AF5);
+    PinSetupAlterFunc(ADC_MISO, omPushPull, pudNone, AF5);
     CskHi();
     // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=...
     // Select baudrate (2.4MHz max): APB=32MHz => div = 16
-    ISpi.Setup(ADC_SPI, boMSB, cpolIdleLow, cphaFirstEdge, sbFdiv16);
+    ISpi.Setup(boMSB, cpolIdleLow, cphaFirstEdge, 2400000);
     ISpi.SetRxOnly();
     ISpi.EnableRxDma();
     // ==== DMA ====
-    dmaStreamAllocate     (ADC_DMA, IRQ_PRIO_MEDIUM, SIrqDmaHandler, NULL);
-    dmaStreamSetPeripheral(ADC_DMA, &ADC_SPI->DR);
-    dmaStreamSetMode      (ADC_DMA, ADC_DMA_MODE);
+    PDma = dmaStreamAlloc(ADC_DMA, IRQ_PRIO_MEDIUM, SIrqDmaHandler, nullptr);
+    dmaStreamSetPeripheral(PDma, &ADC_SPI->DR);
+    dmaStreamSetMode      (PDma, ADC_DMA_MODE);
 }
 
 uint16_t Adc_t::Measure() {
@@ -51,10 +50,10 @@ uint16_t Adc_t::Measure() {
 
 void Adc_t::StartDMAMeasure() {
     (void)ADC_SPI->DR;  // Clear input register
-    dmaStreamSetMemory0(ADC_DMA, &IRslt);
-    dmaStreamSetTransactionSize(ADC_DMA, 3);
-    dmaStreamSetMode(ADC_DMA, ADC_DMA_MODE);
-    dmaStreamEnable(ADC_DMA);
+    dmaStreamSetMemory0(PDma, &IRslt);
+    dmaStreamSetTransactionSize(PDma, 3);
+    dmaStreamSetMode(PDma, ADC_DMA_MODE);
+    dmaStreamEnable(PDma);
     CskLo();
     ISpi.Enable();
 }
@@ -63,12 +62,12 @@ void Adc_t::IrqDmaHandler() {
     chSysLockFromISR();
     ISpi.Disable();
     CskHi();
-    dmaStreamDisable(ADC_DMA);
+    dmaStreamDisable(PDma);
     IRslt = __REV(IRslt);
     IRslt >>= 10;
     IRslt &= 0xFFFF;
     Rslt = IRslt;
 //    Uart.Printf("%u\r", Rslt);
-    App.SignalEvtI(EVTMSK_ADC_READY);
+    EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdAdcReady));
     chSysUnlockFromISR();
 }

@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2015 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -72,7 +72,9 @@ void _stats_init(void) {
  */
 void _stats_increase_irq(void) {
 
+  port_lock_from_isr();
   ch.kernel_stats.n_irq++;
+  port_unlock_from_isr();
 }
 
 /**
@@ -84,7 +86,7 @@ void _stats_increase_irq(void) {
 void _stats_ctxswc(thread_t *ntp, thread_t *otp) {
 
   ch.kernel_stats.n_ctxswc++;
-  chTMChainMeasurementToX(&otp->p_stats, &ntp->p_stats);
+  chTMChainMeasurementToX(&otp->stats, &ntp->stats);
 }
 
 /**

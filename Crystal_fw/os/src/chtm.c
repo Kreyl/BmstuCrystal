@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2015 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -57,14 +57,12 @@ static inline void tm_stop(time_measurement_t *tmp,
   tmp->n++;
   tmp->last = (now - tmp->last) - offset;
   tmp->cumulative += (rttime_t)tmp->last;
-  /*lint -save -e9013 [15.7] There is no else because it is not needed.*/
   if (tmp->last > tmp->worst) {
     tmp->worst = tmp->last;
   }
-  else if (tmp->last < tmp->best) {
+  if (tmp->last < tmp->best) {
     tmp->best = tmp->last;
   }
-  /*lint -restore*/
 }
 
 /*===========================================================================*/

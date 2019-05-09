@@ -8,7 +8,7 @@
 #ifndef USB_USB_CDC_H_
 #define USB_USB_CDC_H_
 
-#include "serial_usb.h"
+#include "hal_serial_usb.h"
 #include "stdarg.h"
 #include "shell.h"
 

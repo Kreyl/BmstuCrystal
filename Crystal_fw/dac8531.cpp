@@ -18,13 +18,13 @@ Dac_t Dac;
 //} // extern c
 
 void Dac_t::Init() {
-    PinSetupOut(DAC_GPIO, DAC_CSK, omPushPull, pudNone);
-    PinSetupAlterFunc(DAC_GPIO, DAC_CLK, omPushPull, pudNone, AF5);
-    PinSetupAlterFunc(DAC_GPIO, DAC_MOSI, omPushPull, pudNone, AF5);
+    PinSetupOut(DAC_CS, omPushPull);
+    PinSetupAlterFunc(DAC_CLK, omPushPull, pudNone, AF5);
+    PinSetupAlterFunc(DAC_MOSI, omPushPull, pudNone, AF5);
     CskHi();
 
     // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=f/2 (SPI Freq supported up to 30 MHz)
-    ISpi.Setup(DAC_SPI, boMSB, cpolIdleLow, cphaSecondEdge, sbFdiv2);
+    ISpi.Setup(boMSB, cpolIdleLow, cphaSecondEdge, 30000000);
     ISpi.Enable();
 //    ISpi.SetModeTxOnly();
 //    ISpi.EnableTxDma();

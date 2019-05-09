@@ -23,9 +23,9 @@
 */
 class Dac_t {
 private:
-    Spi_t ISpi;
-    void CskHi() { PinSet(DAC_GPIO, DAC_CSK); }
-    void CskLo() { PinClear(DAC_GPIO, DAC_CSK); }
+    Spi_t ISpi{DAC_SPI};
+    void CskHi() { PinSetHi(DAC_CS); }
+    void CskLo() { PinSetLo(DAC_CS); }
 public:
     void Init();
     void StartDMA_DAC();

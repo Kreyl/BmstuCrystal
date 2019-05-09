@@ -156,7 +156,7 @@ public:
 
     // For debug purposes
     void PrintState() {
-        Uart.Printf("\rSz=%d;\r", Sz);
+        Printf("\rSz=%d;\r", Sz);
         //for(int32_t i=0; i<Sz; i++) Uart.Printf("a%d=%d ", i, a[i]);
 //        for(uint32_t i=0; i<Sz; i++) Uart.Printf("x%d=%d ", i, a[i]);
     }
@@ -219,7 +219,7 @@ public:
 
     // For debug purposes
     void PrintState() {
-        Uart.Printf("\rSzA=%d; SzB=%d", SzA, SzB);
+        Printf("\rSzA=%d; SzB=%d", SzA, SzB);
 //        for(int32_t i=0; i<SzA; i++) Uart.Printf("a%d=%d ", i, a[i]);
 //        Uart.Printf("\r");
 //        for(int32_t i=0; i<SzB; i++) Uart.Printf("b%d=%d ", i, b[i]);

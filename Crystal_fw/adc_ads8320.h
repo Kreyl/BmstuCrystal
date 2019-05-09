@@ -5,8 +5,7 @@
  *      Author: g.kruglov
  */
 
-#ifndef ADC_H_
-#define ADC_H_
+#pragma once
 
 #include "kl_lib.h"
 #include "board.h"
@@ -21,10 +20,11 @@
 
 class Adc_t {
 private:
-    Spi_t ISpi;
-    void CskHi() { PinSet(ADC_GPIO, ADC_CSK); }
-    void CskLo() { PinClear(ADC_GPIO, ADC_CSK); }
+    Spi_t ISpi{ADC_SPI};
+    void CskHi() { PinSetHi(ADC_CS); }
+    void CskLo() { PinSetLo(ADC_CS); }
     uint32_t IRslt;
+    const stm32_dma_stream_t *PDma;
 public:
     uint32_t Rslt;
     void Init();
@@ -35,5 +35,3 @@ public:
 };
 
 extern Adc_t Adc;
-
-#endif /* ADC_H_ */

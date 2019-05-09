@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--**************************************-->
-<!--   File    : Crystal.fsproj           -->
-<!--   Format  : TopoR Project file       -->
-<!--   Version : 2                        -->
-<!--   Program : TopoR Lite 7.0.18578     -->
-<!--   Date    : Saturday, April 13, 2019 -->
-<!--   Time    : 00:49                    -->
-<!--**************************************-->
+<!--*************************************-->
+<!--   File    : Crystal.fsproj          -->
+<!--   Format  : TopoR Project file      -->
+<!--   Version : 2                       -->
+<!--   Program : TopoR Lite 7.0.18578    -->
+<!--   Date    : Tuesday, April 16, 2019 -->
+<!--   Time    : 14:07                   -->
+<!--*************************************-->
 
 <Project>
    <Version current="2"/>
    <GUID>{DB070787-C1B0-4FB7-ACDA-F2A74CF1AA96}</GUID>
    <Documents>
       <Section name="PCB" isExpanded="true">
-         <File path=".\Crystal.fsx" isopened="1" dateChange="2019-04-13 00:19:40"/>
+         <File path=".\Crystal.fsx" isopened="1" dateChange="2019-04-13 00:45:22"/>
       </Section>
-      <Section name="AutoRouting" isExpanded="false"/>
+      <Section name="AutoRouting" isExpanded="true">
+         <File path=".\autoroute_190416140606\Crystal_1573-9s.fsb" isopened="0" dateChange="2019-04-16 14:06:44"/>
+      </Section>
    </Documents>
 </Project>

@@ -6,9 +6,10 @@
  */
 
 #include "usb_cdc.h"
-#include "usb.h"
+#include "hal_usb.h"
 #include "descriptors_cdc.h"
 #include "main.h"
+#include "MsgQ.h"
 
 UsbCDC_t UsbCDC;
 
@@ -64,7 +65,7 @@ static void usb_event(USBDriver *usbp, usbevent_t event) {
             usbInitEndpointI(usbp, USBD2_INTERRUPT_REQUEST_EP, &ep2config);
 
             sduConfigureHookI(&UsbCDC.SDU2);   // Resetting the state of the CDC subsystem
-            App.SignalEvtI(EVTMSK_USB_READY);
+            EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdUsbReady));
             chSysUnlockFromISR();
             return;
         case USB_EVENT_SUSPEND:
