@@ -1,17 +1,10 @@
-/*
- * main.cpp
- *
- *  Created on: 20 февр. 2014 г.
- *      Author: g.kruglov
- */
-
 #include "main.h"
 #include "MsgQ.h"
 #include "math.h"
 #include "filter.h"
 #include "usb_cdc.h"
 #include "adc_ads8320.h"
-//#include "dac8531.h"
+#include "dac8531.h"
 #include "led.h"
 #include "Sequences.h"
 
@@ -30,7 +23,7 @@ LedSmooth_t Led3(LED3_PIN);
 static TmrKL_t TmrEverySecond {TIME_MS2I(1000), evtIdEverySecond, tktPeriodic};
 
 Timer_t SamplingTmr = {SAMPLING_TMR};
-//static int32_t DacOutput;
+static int32_t DacOutput;
 uint16_t ResolutionMask = 0xFFFF;
 FirFloat_t Fir;
 IirFloat_t Iir;
@@ -61,7 +54,7 @@ int main(void) {
     PinSetupOut(DEBUG_PIN, omPushPull);
 
     Adc.Init();
-//    Dac.Init();
+    Dac.Init();
 
     // ==== Sampling timer ====
     SamplingTmr.Init();
@@ -94,10 +87,9 @@ void ITask() {
                 break;
 
             case evtIdAdcReady:
-//                Printf("a");
                 PinToggle(DEBUG_PIN);
-//                // ==== Remove DC from input ====
-//    //            DacOutput = Adc.Rslt; // DEBUG
+                // ==== Remove DC from input ====
+                DacOutput = Adc.Rslt; // DEBUG
 //                static int32_t x1 = 0, y1;
 //                int32_t x0 = Adc.Rslt & ResolutionMask;
 //                int32_t y0 = x0 - x1 + ((9999 * y1) / 10000);
@@ -124,7 +116,6 @@ void ITask() {
 #if 1 // ======================= Command processing ============================
 void OnCmd(Shell_t *PShell) {
 	Cmd_t *PCmd = &PShell->Cmd;
-//    Uart.Printf("\r%S", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) PShell->Ack(retvOk);
 
@@ -138,16 +129,17 @@ void OnCmd(Shell_t *PShell) {
         else PShell->Ack(retvCmdError);
     }
 
-//    else if(PCmd->NameIs("SetResolution")) {
-//        if(PCmd->GetNextNumber(&dw32) == OK) {
-//            if(dw32 >= 1 and dw32 <= 16) {
-//                ResolutionMask = 0xFFFF << (16 - dw32);
-//                PShell->Ack(OK);
-//            }
-//            else PShell->Ack(CMD_ERROR);
-//        }
-//        else PShell->Ack(CMD_ERROR);
-//    }
+    else if(PCmd->NameIs("SetResolution")) {
+        uint32_t NewRes;
+        if(PCmd->GetNext<uint32_t>(&NewRes) == retvOk) {
+            if(NewRes >= 1 and NewRes <= 16) {
+                ResolutionMask = 0xFFFF << (16 - NewRes);
+                PShell->Ack(retvOk);
+            }
+            else PShell->Ack(retvBadValue);
+        }
+        else PShell->Ack(retvCmdError);
+    }
 
     // Stat/Stop
     else if(PCmd->NameIs("Start")) { PCurrentFilter->Start(); PShell->Ack(retvOk); }
@@ -224,8 +216,6 @@ void OnCmd(Shell_t *PShell) {
 
 #if 1 // ============================= IRQ =====================================
 // Sampling IRQ: output y0 and start new measurement. ADC will inform app when completed.
-
-#if 1 // ==== Sampling Timer =====
 extern "C"
 void SAMPLING_TMR_IRQHandler(void) {
     CH_IRQ_PROLOGUE();
@@ -233,12 +223,9 @@ void SAMPLING_TMR_IRQHandler(void) {
     if(SAMPLING_TMR->SR & TIM_SR_UIF) {
     	SAMPLING_TMR->SR &= ~TIM_SR_UIF;
         Adc.StartDMAMeasure();
-//        Dac.Set(DacOutput);
-//        Led[1].SetHi();
+        Dac.Set(DacOutput);
     }
     chSysUnlockFromISR();
     CH_IRQ_EPILOGUE();
 }
-#endif
-
 #endif
