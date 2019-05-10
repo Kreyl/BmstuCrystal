@@ -5,8 +5,7 @@
  *      Author: g.kruglov
  */
 
-#ifndef MAIN_H_
-#define MAIN_H_
+#pragma once
 
 #include "ch.h"
 #include "kl_lib.h"
@@ -17,5 +16,4 @@
 #include "shell.h"
 #include "board.h"
 
-
-#endif /* MAIN_H_ */
+void OnAdcMeasurementDoneI();

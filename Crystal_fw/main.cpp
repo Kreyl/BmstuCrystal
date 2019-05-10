@@ -16,19 +16,18 @@ CmdUart_t Uart{&CmdUartParams};
 static void ITask();
 static void OnCmd(Shell_t *PShell);
 
-LedSmooth_t Led1(LED1_PIN);
-LedSmooth_t Led2(LED2_PIN);
-LedSmooth_t Led3(LED3_PIN);
+LedSmooth_t LedPwr(LED1_PIN);
+LedSmooth_t LedUSBAct(LED2_PIN);
+LedSmooth_t LedData(LED3_PIN);
 
-static TmrKL_t TmrEverySecond {TIME_MS2I(1000), evtIdEverySecond, tktPeriodic};
-
+// Sampling and filtering
 Timer_t SamplingTmr = {SAMPLING_TMR};
-static int32_t DacOutput;
+static int32_t DacOutput = 0;
 uint16_t ResolutionMask = 0xFFFF;
 FirFloat_t Fir;
 IirFloat_t Iir;
 NotchFloat_t Notch;
-Filter_t *PCurrentFilter;
+Filter_t *PCurrentFilter = &Fir;
 #endif
 
 int main(void) {
@@ -46,11 +45,13 @@ int main(void) {
     Printf("\r%S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
     Clk.PrintFreqs();
 
-    Led1.Init();
-    Led2.Init();
-    Led3.Init();
-    Led1.SetBrightness(255);
+    // Leds
+    LedPwr.Init();
+    LedUSBAct.Init();
+    LedData.Init();
+    LedPwr.SetBrightness(42); // Indicate PowerOn
 
+    // Debug pin
     PinSetupOut(DEBUG_PIN, omPushPull);
 
     Adc.Init();
@@ -77,35 +78,15 @@ void ITask() {
     while(true) {
         EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
         switch(Msg.ID) {
-            case evtIdEverySecond:
-                break;
-
             case evtIdShellCmd:
-                Led3.StartOrRestart(lsqDataExch);
+                LedData.StartOrRestart(lsqDataExch);
                 OnCmd((Shell_t*)Msg.Ptr);
                 ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
                 break;
 
-            case evtIdAdcReady:
-                PinToggle(DEBUG_PIN);
-                // ==== Remove DC from input ====
-                DacOutput = Adc.Rslt; // DEBUG
-//                static int32_t x1 = 0, y1;
-//                int32_t x0 = Adc.Rslt & ResolutionMask;
-//                int32_t y0 = x0 - x1 + ((9999 * y1) / 10000);
-//                x1 = x0;
-//                y1 = y0;
-//                // ==== Filter ====
-//                y0 = PCurrentFilter->AddXAndCalculate(y0);
-//                // ==== Output received value ====
-//                DacOutput = 32768 + y0;
-//                Led[1].SetLo();
-//            }
-                break;
-
             case evtIdUsbReady:
                 Printf("USB ready\r");
-                Led2.SetBrightness(255);
+                LedUSBAct.SetBrightness(255);
                 break;
 
             default: Printf("Unhandled Msg %u\r", Msg.ID); break;
@@ -146,64 +127,63 @@ void OnCmd(Shell_t *PShell) {
     else if(PCmd->NameIs("Stop"))  { PCurrentFilter->Stop();  PShell->Ack(retvOk); }
 #endif
 
-#if 0 // ==== Float FIR ====
-    else if(PCmd->NameIs("#SetupFir")) {
+#if 1 // ==== Float FIR ====
+    else if(PCmd->NameIs("SetupFir")) {
         PCurrentFilter->Stop();
         Fir.Reset();
         Fir.ResetCoefs();
         // ==== Coeffs ====
-        while(PCmd->GetNextTokenString() == OK and Fir.Sz < FIR_MAX_SZ) {
+        while(PCmd->GetNextString() == retvOk and Fir.Sz < FIR_MAX_SZ) {
             if(PCmd->Token[0] == 'a') {
-                if(Convert::TryStrToFloat(&PCmd->Token[1], &Fir.a[Fir.Sz]) == OK) Fir.Sz++;
-                else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // error converting
+                if(Convert::TryStrToFloat(&PCmd->Token[1], &Fir.a[Fir.Sz]) == retvOk) Fir.Sz++;
+                else { PShell->Ack(retvBadValue); return; }    // error converting
             }
-            else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // != 'a'
+            else { PShell->Ack(retvCmdError); return; }    // != 'a'
         }
-        PShell->Ack(OK);
+        PShell->Ack(retvOk);
         PCurrentFilter = &Fir;
         PCurrentFilter->Start();
 //        Fir.PrintState();
     }
 #endif
 
-#if 0 // ==== Float IIR ====
-    else if(PCmd->NameIs("#SetupIir")) {
+#if 1 // ==== Float IIR ====
+    else if(PCmd->NameIs("SetupIir")) {
         PCurrentFilter->Stop();
         Iir.Reset();
         Iir.ResetCoefs();
         // ==== Coeffs ==== b[0] acts as b[1]
-        while(PCmd->GetNextTokenString() == OK) {
-//            Uart.Printf("\rToken: %S", PCmd->Token);
+        while(PCmd->GetNextString() == retvOk) {
             if(PCmd->Token[0] == 'a') {
-                if(Iir.SzA >= IIR_MAX_SZ) { PShell->Ack(CMD_ERROR); goto CmdEnd; }   // Too many coefs
-                if(Convert::TryStrToFloat(&PCmd->Token[1], &Iir.a[Iir.SzA]) == OK) Iir.SzA++;
-                else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // error converting
+                if(Iir.SzA >= IIR_MAX_SZ) { PShell->Ack(retvCmdError); return; }   // Too many coefs
+                if(Convert::TryStrToFloat(&PCmd->Token[1], &Iir.a[Iir.SzA]) == retvOk) Iir.SzA++;
+                else { PShell->Ack(retvCmdError); return; }    // error converting
             }
             else if(PCmd->Token[0] == 'b') {
-                if(Iir.SzB >= IIR_MAX_SZ) { PShell->Ack(CMD_ERROR); goto CmdEnd; }   // Too many coefs
-                if(Convert::TryStrToFloat(&PCmd->Token[1], &Iir.b[Iir.SzB]) == OK) Iir.SzB++;
-                else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // error converting
+                if(Iir.SzB >= IIR_MAX_SZ) { PShell->Ack(retvCmdError); return; }   // Too many coefs
+                if(Convert::TryStrToFloat(&PCmd->Token[1], &Iir.b[Iir.SzB]) == retvOk) Iir.SzB++;
+                else { PShell->Ack(retvCmdError); return; }    // error converting
             }
-            else { PShell->Ack(CMD_ERROR); goto CmdEnd; }    // != 'a'
+            else { PShell->Ack(retvCmdError); return; }    // != 'a'
         }
-        PShell->Ack(OK);
+        PShell->Ack(retvOk);
         PCurrentFilter = &Iir;
         PCurrentFilter->Start();
 //        Iir.PrintState();
     }
 #endif
 
-#if 0 // ==== Notch ====
-    else if(PCmd->NameIs("#SetupNotch")) {
+#if 1 // ==== Notch ====
+    else if(PCmd->NameIs("SetupNotch")) {
         PCurrentFilter->Stop();
         Notch.Reset();
         // ==== Coeffs ====
         float k1, k2; // Both are mandatory
-        if(PCmd->GetNextTokenString() != OK)               { PShell->Ack(CMD_ERROR); goto CmdEnd; }
-        if(Convert::TryStrToFloat(PCmd->Token, &k1) != OK) { PShell->Ack(CMD_ERROR); goto CmdEnd; }
-        if(PCmd->GetNextTokenString() != OK)               { PShell->Ack(CMD_ERROR); goto CmdEnd; }
-        if(Convert::TryStrToFloat(PCmd->Token, &k2) != OK) { PShell->Ack(CMD_ERROR); goto CmdEnd; }
-        PShell->Ack(OK);
+        if(PCmd->GetNextString() != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(Convert::TryStrToFloat(PCmd->Token, &k1) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PCmd->GetNextString() != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(Convert::TryStrToFloat(PCmd->Token, &k2) != retvOk) { PShell->Ack(retvCmdError); return; }
+        PShell->Ack(retvOk);
         Notch.Setup(k1, k2);
         PCurrentFilter = &Notch;
         PCurrentFilter->Start();
@@ -215,6 +195,23 @@ void OnCmd(Shell_t *PShell) {
 #endif
 
 #if 1 // ============================= IRQ =====================================
+void OnAdcMeasurementDoneI() {
+    PinSetLo(DEBUG_PIN);
+#if 0 // DEBUG ByPass
+    DacOutput = Adc.Rslt;
+#else // ==== Remove DC from input ====
+    static int32_t x1 = 0, y1;
+    int32_t x0 = Adc.Rslt & ResolutionMask;
+    int32_t y0 = x0 - x1 + ((9999L * y1) / 10000L);
+    x1 = x0;
+    y1 = y0;
+    // ==== Filter ====
+    y0 = PCurrentFilter->AddXAndCalculate(y0);
+    // ==== Output received value ====
+    DacOutput = 32768L + y0;
+#endif
+}
+
 // Sampling IRQ: output y0 and start new measurement. ADC will inform app when completed.
 extern "C"
 void SAMPLING_TMR_IRQHandler(void) {
@@ -222,6 +219,7 @@ void SAMPLING_TMR_IRQHandler(void) {
     chSysLockFromISR();
     if(SAMPLING_TMR->SR & TIM_SR_UIF) {
     	SAMPLING_TMR->SR &= ~TIM_SR_UIF;
+    	PinSetHi(DEBUG_PIN);
         Adc.StartDMAMeasure();
         Dac.Set(DacOutput);
     }

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Crystal {
+namespace Crystal
+{
     public enum Rslt {OK=0, Failure=1, CmdError=2};
 
     public partial class MainForm : Form {
@@ -67,12 +64,12 @@ namespace Crystal {
             if(!CrystalDevice.IsConnected) return;
             int Freq = Convert.ToInt16(cbFreqSampling.Text);
             Freq *= 1000;
-            if(CrystalDevice.Command("#SetSmplFreq " + Freq.ToString()) != Rslt.OK) DisplayFailure("Сбой при обмене данными");
+            if(CrystalDevice.Command("SetSmplFreq " + Freq.ToString()) != Rslt.OK) DisplayFailure("Сбой при обмене данными");
         }
         private void comboBoxBits_SelectedIndexChanged(object sender, EventArgs e) {
             if(!CrystalDevice.IsConnected) return;
             int Resolution = Convert.ToInt16(cbResolution.Text);
-            if(CrystalDevice.Command("#SetResolution " + Resolution.ToString()) != Rslt.OK) DisplayFailure("Сбой при обмене данными");
+            if(CrystalDevice.Command("SetResolution " + Resolution.ToString()) != Rslt.OK) DisplayFailure("Сбой при обмене данными");
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e) {
@@ -81,12 +78,13 @@ namespace Crystal {
         
         // Check input of FIR/IIR
         private Rslt CheckFirIirCoef(TextBox tb) {
-            decimal Dummy;
-            if(!Decimal.TryParse(tb.Text, out Dummy)) {
+            if (!decimal.TryParse(tb.Text, out decimal Dummy))
+            {
                 tb.BackColor = Color.Red;
                 return Rslt.Failure;
             }
-            else {
+            else
+            {
                 tb.BackColor = SystemColors.Window;
                 return Rslt.OK;
             }
@@ -99,17 +97,20 @@ namespace Crystal {
 
         // Check input Notch
         private Rslt CheckNotchK(TextBox tb) {
-            decimal k;
-            if(!Decimal.TryParse(tb.Text, out k)) {
+            if (!decimal.TryParse(tb.Text, out decimal k))
+            {
                 tb.BackColor = Color.Red;
                 return Rslt.Failure;
             }
-            else {
-                if(k >= 1) {
+            else
+            {
+                if (k >= 1)
+                {
                     tb.BackColor = Color.Red;
                     return Rslt.Failure;
                 }
-                else {
+                else
+                {
                     tb.BackColor = SystemColors.Window;
                     return Rslt.OK;
                 }
@@ -159,9 +160,8 @@ namespace Crystal {
             if(!IName.Contains("IR_")) return -2;
             AB = IName.Substring(IName.Length - 2, 1);
             string INumStr = IName.Substring(IName.Length - 1);
-            int INum;
-            if(int.TryParse(INumStr, out INum)) return INum;
-            else return -3;            
+            if (int.TryParse(INumStr, out int INum)) return INum;
+            else return -3;
         }
 
         // Send coefs to stand
@@ -171,25 +171,24 @@ namespace Crystal {
             // Fir and IIR
             if(tabControl1.SelectedIndex < 2) {
                 GroupBox grb;
-                string AB;
                 int Order;
                 // FIR 
-                if(tabControl1.SelectedIndex == 0) { 
+                if (tabControl1.SelectedIndex == 0) { 
                     Order = comboBox_FIR_order.SelectedIndex;
-                    SCmd = "#SetupFir ";
+                    SCmd = "SetupFir ";
                     grb = groupBoxFIR_coefs;
                 }
                 // IIR 
                 else { 
                     Order = comboBox_IIR_order.SelectedIndex;
-                    SCmd = "#SetupIir ";
+                    SCmd = "SetupIir ";
                     grb = groupBoxIIR_coefs;
                 }
                 // Iterate textboxes
                 foreach(Control c in grb.Controls) {
                     if(!(c is TextBox)) continue;
                     TextBox tb = (TextBox)c;
-                    int INum = GetCoefN(tb, out AB);
+                    int INum = GetCoefN(tb, out string AB);
                     if(INum >= 0 && INum <= Order) {
                         if(AB == "a") {
                             if(CheckFirIirCoef(tb) != Rslt.OK) return;
@@ -209,7 +208,7 @@ namespace Crystal {
             // Notch
             else if(tabControl1.SelectedIndex == 2) {
                 if(CheckNotchK(textBox_k1) != Rslt.OK || CheckNotchK(textBox_k2) != Rslt.OK) return;
-                else SCmd = "#SetupNotch " + textBox_k1.Text.Replace(',', '.') + " " + textBox_k2.Text.Replace(',', '.');
+                else SCmd = "SetupNotch " + textBox_k1.Text.Replace(',', '.') + " " + textBox_k2.Text.Replace(',', '.');
             }
             
             // ==== Setup new filter data ====
@@ -347,19 +346,18 @@ namespace Crystal {
             LastError = "";
         }
 
-        // ==== Commands ====
+        // ==== Commands ===
         public Rslt Ping() {
-            string SReply;
-            if(SendAndGetReply("#Ping", out SReply) == Rslt.OK) {
-                if(SReply.Equals("#Ack 0", StringComparison.OrdinalIgnoreCase)) return Rslt.OK;
+            if (SendAndGetReply("Ping", out string SReply) == Rslt.OK) {
+                if (SReply.Equals("Ack 0", StringComparison.OrdinalIgnoreCase)) return Rslt.OK;
             }
             return Rslt.Failure;
         }
 
         public Rslt Command(string SCmd) {
-            string SReply;
-            if(SendAndGetReply(SCmd, out SReply) == Rslt.OK) {
-                if(SReply.Equals("#Ack 0", StringComparison.OrdinalIgnoreCase)) return Rslt.OK;
+            if (SendAndGetReply(SCmd, out string SReply) == Rslt.OK)
+            {
+                if (SReply.Equals("Ack 0", StringComparison.OrdinalIgnoreCase)) return Rslt.OK;
                 else return Rslt.CmdError;
             }
             return Rslt.Failure;

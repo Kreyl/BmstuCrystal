@@ -1,1 +1,10 @@
 D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\bin\Release\Crystal.exe.config
+D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\bin\Release\Crystal.exe
+D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\bin\Release\Crystal.pdb
+D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\obj\Release\Crystal.csprojAssemblyReference.cache
+D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\obj\Release\Crystal.MainForm.resources
+D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\obj\Release\Crystal.Properties.Resources.resources
+D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\obj\Release\Crystal.csproj.GenerateResource.cache
+D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\obj\Release\Crystal.csproj.CoreCompileInputs.cache
+D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\obj\Release\Crystal.exe
+D:\Nute\Bmstu\BmstuCrystal\Crystal_sw\Crystal\obj\Release\Crystal.pdb

@@ -23,10 +23,10 @@ private:
     Spi_t ISpi{ADC_SPI};
     void CskHi() { PinSetHi(ADC_CS); }
     void CskLo() { PinSetLo(ADC_CS); }
-    uint32_t IRslt;
+    int32_t IRslt;
     const stm32_dma_stream_t *PDma;
 public:
-    uint32_t Rslt;
+    int32_t Rslt;
     void Init();
     uint16_t Measure();
     void StartDMAMeasure();

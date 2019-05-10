@@ -21,7 +21,4 @@ enum EvtMsgId_t {
     evtIdUsbNewCmd,
     evtIdUsbInDone,
     evtIdUsbOutDone,
-
-    // Misc periph
-    evtIdAdcReady,
 };

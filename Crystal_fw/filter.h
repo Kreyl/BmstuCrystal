@@ -5,8 +5,7 @@
  *      Author: Kreyl
  */
 
-#ifndef FILTER_H_
-#define FILTER_H_
+#pragma once
 
 #include "uart.h"
 #include "math.h"
@@ -156,9 +155,9 @@ public:
 
     // For debug purposes
     void PrintState() {
-        Printf("\rSz=%d;\r", Sz);
-        //for(int32_t i=0; i<Sz; i++) Uart.Printf("a%d=%d ", i, a[i]);
-//        for(uint32_t i=0; i<Sz; i++) Uart.Printf("x%d=%d ", i, a[i]);
+        Printf("Sz=%d;\r", Sz);
+        for(int32_t i=0; i<Sz; i++) Printf("a%d=%f ", i, a[i]);
+        PrintfEOL();
     }
 };
 #endif
@@ -219,10 +218,11 @@ public:
 
     // For debug purposes
     void PrintState() {
-        Printf("\rSzA=%d; SzB=%d", SzA, SzB);
-//        for(int32_t i=0; i<SzA; i++) Uart.Printf("a%d=%d ", i, a[i]);
-//        Uart.Printf("\r");
-//        for(int32_t i=0; i<SzB; i++) Uart.Printf("b%d=%d ", i, b[i]);
+        Printf("SzA=%d; SzB=%d\r", SzA, SzB);
+        for(int32_t i=0; i<SzA; i++) Printf("a%d=%f ", i, a[i]);
+        PrintfEOL();
+        for(int32_t i=0; i<SzB; i++) Printf("b%d=%f ", i, b[i]);
+        PrintfEOL();
     }
 };
 #endif
@@ -344,5 +344,4 @@ public:
     }
 };
 #endif
-
-#endif /* FILTER_H_ */
+//

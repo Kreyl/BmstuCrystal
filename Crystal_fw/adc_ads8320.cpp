@@ -8,7 +8,6 @@
 #include "adc_ads8320.h"
 #include "uart.h"
 #include "main.h"
-#include "MsgQ.h"
 
 Adc_t Adc;
 
@@ -22,7 +21,7 @@ void Adc_t::Init() {
     PinSetupAlterFunc(ADC_MISO, omPushPull, pudNone, AF5);
     CskHi();
     // ==== SPI ====    MSB first, master, ClkLowIdle, FirstEdge, Baudrate=...
-    // Select baudrate (2.4MHz max): APB=32MHz => div = 16
+    // Select baudrate (2.4MHz max)
     ISpi.Setup(boMSB, cpolIdleLow, cphaFirstEdge, 2400000);
     ISpi.SetRxOnly();
     ISpi.EnableRxDma();
@@ -68,6 +67,6 @@ void Adc_t::IrqDmaHandler() {
     IRslt &= 0xFFFF;
     Rslt = IRslt;
 //    Uart.Printf("%u\r", Rslt);
-    EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdAdcReady));
+    OnAdcMeasurementDoneI();
     chSysUnlockFromISR();
 }
