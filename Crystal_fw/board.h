@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 
 // ==== General ====
 #define APP_NAME            "BmStuCrystal"
@@ -41,6 +41,11 @@
 #define DAC_MOSI    	GPIOB, 15
 #define DAC_CS      	GPIOB, 12
 #define DAC_CLK     	GPIOB, 13
+
+// USB
+#define USB_DM          GPIOA, 11
+#define USB_DP          GPIOA, 12
+#define USB_AF          AF10
 
 #endif
 

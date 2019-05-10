@@ -8,10 +8,12 @@
 #include "usb_cdc.h"
 #include "hal_usb.h"
 #include "descriptors_cdc.h"
-#include "main.h"
+#include "hal_serial_usb.h"
 #include "MsgQ.h"
 
 UsbCDC_t UsbCDC;
+SerialUSBDriver SDU1;
+static thread_t *PCdcThd;
 
 #if 1 // ========================== Endpoints ==================================
 // ==== EP1 ====
@@ -51,31 +53,38 @@ static const USBEndpointConfig ep2config = {
 #endif
 
 #if 1 // ============================ Events ===================================
+static void SOFHandler(USBDriver *usbp) {
+  osalSysLockFromISR();
+  sduSOFHookI(&SDU1);
+  osalSysUnlockFromISR();
+}
+
 static void usb_event(USBDriver *usbp, usbevent_t event) {
     switch (event) {
         case USB_EVENT_RESET:
+            PrintfI("UsbRst\r");
             return;
         case USB_EVENT_ADDRESS:
+            PrintfI("UsbAddr\r");
             return;
         case USB_EVENT_CONFIGURED:
             chSysLockFromISR();
             /* Enable the endpoints specified in the configuration.
             Note, this callback is invoked from an ISR so I-Class functions must be used.*/
-            usbInitEndpointI(usbp, USBD2_DATA_IN_EP, &ep1config);
-            usbInitEndpointI(usbp, USBD2_INTERRUPT_REQUEST_EP, &ep2config);
-
-            sduConfigureHookI(&UsbCDC.SDU2);   // Resetting the state of the CDC subsystem
-            EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdUsbReady));
+            usbInitEndpointI(usbp, EP_CDC_DATA_IN, &ep1config);
+            usbInitEndpointI(usbp, EP_CDC_INTERRUPT, &ep2config);
+            sduConfigureHookI(&SDU1);   // Resetting the state of the CDC subsystem
+            EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdUsbReady));    // Signal to main thread
             chSysUnlockFromISR();
             return;
         case USB_EVENT_SUSPEND:
-            return;
         case USB_EVENT_WAKEUP:
-            return;
         case USB_EVENT_STALLED:
+        case USB_EVENT_UNCONFIGURED:
             return;
     } // switch
 }
+
 #endif
 
 #if 1  // ==== USB driver configuration ====
@@ -83,67 +92,78 @@ const USBConfig UsbCfg = {
     usb_event,          // This callback is invoked when an USB driver event is registered
     GetDescriptor,      // Device GET_DESCRIPTOR request callback
     sduRequestsHook,    // This hook allows to be notified of standard requests or to handle non standard requests
-    NULL                // Start Of Frame callback
+    SOFHandler          // Start Of Frame callback
 };
 
 // Serial over USB driver configuration
 const SerialUSBConfig SerUsbCfg = {
     &USBD1,                     // USB driver to use
-    USBD2_DATA_IN_EP,           // Bulk IN endpoint used for outgoing data transfer
-    USBD2_DATA_OUT_EP,          // Bulk OUT endpoint used for incoming data transfer
-    USBD2_INTERRUPT_REQUEST_EP  // Interrupt IN endpoint used for notifications
+    EP_CDC_DATA_IN,           // Bulk IN endpoint used for outgoing data transfer
+    EP_CDC_DATA_OUT,          // Bulk OUT endpoint used for incoming data transfer
+    EP_CDC_INTERRUPT  // Interrupt IN endpoint used for notifications
 };
 #endif
 
-void UsbCDC_t::Connect() {
-    usbDisconnectBus(SerUsbCfg.usbp);
-    chThdSleepMilliseconds(1500);
-    usbStart(SerUsbCfg.usbp, &UsbCfg);
-    usbConnectBus(SerUsbCfg.usbp);
-}
+#if 1 // ========================== RX Thread ==================================
+bool UsbCDC_t::IsActive() { return (SDU1.config->usbp->state == USB_ACTIVE); }
 
-static inline void uFPutChar(char c) {
-    UsbCDC.SDU2.vmt->put(&UsbCDC.SDU2, c);
-}
-
-void UsbCDC_t::Printf(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    kl_vsprintf(uFPutChar, 0xFFFF, format, args);
-    va_end(args);
-}
-
-#if 1 // ================================ RX =================================
-__attribute__((__noreturn__))
-void UsbCDC_t::IRxTask() {
+static THD_WORKING_AREA(waThdCDCRX, 128);
+static THD_FUNCTION(ThdCDCRX, arg) {
+    chRegSetThreadName("CDCRX");
     while(true) {
-    	msg_t r = SDU2.vmt->get(&UsbCDC.SDU2);
-    	if(r > 0) {
-    		if(Cmd.PutChar((char)r) == pdrNewCmd) {
-				chSysLock();
-				App.SignalEvtI(EVTMSK_USB_NEW_CMD);
-				chSchGoSleepS(CH_STATE_SUSPENDED); // Wait until cmd processed
-				chSysUnlock();  // Will be here when application signals that cmd processed
-			}
-    	} // if byte rx
+        if(UsbCDC.IsActive()) {
+            msg_t m = SDU1.vmt->get(&SDU1);
+            if(m > 0) {
+//                SDU1.vmt->put(&SDU1, (uint8_t)m);   // repeat what was sent
+                if(UsbCDC.Cmd.PutChar((char)m) == pdrNewCmd) {
+                    chSysLock();
+                    EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdShellCmd, (Shell_t*)&UsbCDC));
+                    chSchGoSleepS(CH_STATE_SUSPENDED); // Wait until cmd processed
+                    chSysUnlock();  // Will be here when application signals that cmd processed
+                }
+            } // if >0
+        } // if active
+        else chThdSleepMilliseconds(540);
     } // while true
 }
 
-static THD_WORKING_AREA(waUsbCDCThread, 128);
-__attribute__((__noreturn__))
-static void UsbCDCThread(void *arg) {
-    chRegSetThreadName("UsbCDCRx");
-    UsbCDC.IRxTask();
+uint8_t UsbCDC_t::IPutChar(char c) {
+    return (SDU1.vmt->putt(&SDU1, (uint8_t)c, TIME_MS2I(99)) == MSG_OK)? retvOk : retvFail;
+}
+
+void UsbCDC_t::SignalCmdProcessed() {
+    chSysLock();
+    if(PCdcThd->state == CH_STATE_SUSPENDED) chSchReadyI(PCdcThd);
+    chSysUnlock();
 }
 #endif
 
 void UsbCDC_t::Init() {
-    // GPIO
-    PinSetupAlterFunc(GPIOA, 11, omOpenDrain, pudNone, AF10);
-    PinSetupAlterFunc(GPIOA, 12, omOpenDrain, pudNone, AF10);
+#if defined STM32L4XX
+    PinSetupAlterFunc(USB_DM, omPushPull, pudNone, USB_AF, psVeryHigh);
+    PinSetupAlterFunc(USB_DP, omPushPull, pudNone, USB_AF, psVeryHigh);
+#elif defined STM32F4
+    PinSetupAlterFunc(USB_DM, omPushPull, pudNone, USB_AF, psHigh);
+    PinSetupAlterFunc(USB_DP, omPushPull, pudNone, USB_AF, psHigh);
+#else
+    PinSetupAnalog(USB_DM);
+    PinSetupAnalog(USB_DP);
+#endif
     // Objects
-    sduObjectInit(&SDU2);
-    sduStart(&SDU2, &SerUsbCfg);
-    // Thread
-    IPThd = chThdCreateStatic(waUsbCDCThread, sizeof(waUsbCDCThread), NORMALPRIO, UsbCDCThread, NULL);
+    usbInit();
+    sduObjectInit(&SDU1);
+    sduStart(&SDU1, &SerUsbCfg);
+    // RX thread
+    PCdcThd = chThdCreateStatic(waThdCDCRX, sizeof(waThdCDCRX), NORMALPRIO, ThdCDCRX, NULL);
+}
+
+void UsbCDC_t::Connect() {
+    usbDisconnectBus(SerUsbCfg.usbp);
+    chThdSleepMilliseconds(504);
+    usbStart(SerUsbCfg.usbp, &UsbCfg);
+    usbConnectBus(SerUsbCfg.usbp);
+}
+void UsbCDC_t::Disconnect() {
+    usbStop(SerUsbCfg.usbp);
+    usbDisconnectBus(SerUsbCfg.usbp);
 }

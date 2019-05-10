@@ -9,10 +9,11 @@
 #include "MsgQ.h"
 #include "math.h"
 #include "filter.h"
-//#include "usb_cdc.h"
-//#include "adc_ads8320.h"
+#include "usb_cdc.h"
+#include "adc_ads8320.h"
 //#include "dac8531.h"
 #include "led.h"
+#include "Sequences.h"
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
@@ -29,7 +30,7 @@ LedSmooth_t Led3(LED3_PIN);
 static TmrKL_t TmrEverySecond {TIME_MS2I(1000), evtIdEverySecond, tktPeriodic};
 
 Timer_t SamplingTmr = {SAMPLING_TMR};
-static int32_t DacOutput;
+//static int32_t DacOutput;
 uint16_t ResolutionMask = 0xFFFF;
 FirFloat_t Fir;
 IirFloat_t Iir;
@@ -55,21 +56,24 @@ int main(void) {
     Led1.Init();
     Led2.Init();
     Led3.Init();
+    Led1.SetBrightness(255);
 
-//    Adc.Init();
+    PinSetupOut(DEBUG_PIN, omPushPull);
+
+    Adc.Init();
 //    Dac.Init();
 
     // ==== Sampling timer ====
-//    SamplingTmr.Init();
-//    SamplingTmr.SetUpdateFrequency(10000); // Start Fsmpl value
-//    SamplingTmr.EnableIrq(SAMPLING_TMR_IRQ, IRQ_PRIO_MEDIUM);
-//    SamplingTmr.EnableIrqOnUpdate();
-//    SamplingTmr.Enable();
+    SamplingTmr.Init();
+    SamplingTmr.SetUpdateFrequencyChangingTopValue(10000); // Start Fsmpl value
+    SamplingTmr.EnableIrq(SAMPLING_TMR_IRQ, IRQ_PRIO_MEDIUM);
+    SamplingTmr.EnableIrqOnUpdate();
+    SamplingTmr.Enable();
 
     // ==== USB ====
-//    UsbCDC.Init();
-//    chThdSleepMilliseconds(540);
-//    UsbCDC.Connect();
+    UsbCDC.Init();
+    chThdSleepMilliseconds(540);
+    UsbCDC.Connect();
 
     // Main cycle
     ITask();
@@ -84,36 +88,33 @@ void ITask() {
                 break;
 
             case evtIdShellCmd:
+                Led3.StartOrRestart(lsqDataExch);
                 OnCmd((Shell_t*)Msg.Ptr);
                 ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
                 break;
 
             case evtIdAdcReady:
-    //                // ==== Remove DC from input ====
-    //    //            DacOutput = Adc.Rslt; // DEBUG
-    //                static int32_t x1 = 0, y1;
-    //                int32_t x0 = Adc.Rslt & ResolutionMask;
-    //                int32_t y0 = x0 - x1 + ((9999 * y1) / 10000);
-    //                x1 = x0;
-    //                y1 = y0;
-    //                // ==== Filter ====
-    //                y0 = PCurrentFilter->AddXAndCalculate(y0);
-    //                // ==== Output received value ====
-    //                DacOutput = 32768 + y0;
-    //                Led[1].SetLo();
-    //            }
+//                Printf("a");
+                PinToggle(DEBUG_PIN);
+//                // ==== Remove DC from input ====
+//    //            DacOutput = Adc.Rslt; // DEBUG
+//                static int32_t x1 = 0, y1;
+//                int32_t x0 = Adc.Rslt & ResolutionMask;
+//                int32_t y0 = x0 - x1 + ((9999 * y1) / 10000);
+//                x1 = x0;
+//                y1 = y0;
+//                // ==== Filter ====
+//                y0 = PCurrentFilter->AddXAndCalculate(y0);
+//                // ==== Output received value ====
+//                DacOutput = 32768 + y0;
+//                Led[1].SetLo();
+//            }
                 break;
 
-#if 0 // ==== USB ====
-        if(EvtMsk & EVTMSK_USB_READY) {
-            Uart.Printf("\rUsbReady");
-            Led[0].SetHi();
-        }
-        if(EvtMsk & EVTMSK_USB_SUSPEND) {
-            Uart.Printf("\rUsbSuspend");
-            Led[0].SetLo();
-        }
-#endif
+            case evtIdUsbReady:
+                Printf("USB ready\r");
+                Led2.SetBrightness(255);
+                break;
 
             default: Printf("Unhandled Msg %u\r", Msg.ID); break;
         } // Switch
@@ -122,39 +123,35 @@ void ITask() {
 
 #if 1 // ======================= Command processing ============================
 void OnCmd(Shell_t *PShell) {
-    Led2.SetBrightness(255);
 	Cmd_t *PCmd = &PShell->Cmd;
 //    Uart.Printf("\r%S", PCmd->Name);
     // Handle command
-    if(PCmd->NameIs("#Ping")) PShell->Ack(retvOk);
+    if(PCmd->NameIs("Ping")) PShell->Ack(retvOk);
 
-#if 0 // ==== Common ====
-    else if(PCmd->NameIs("#SetSmplFreq")) {
-        if(PCmd->GetNextNumber(&dw32) == OK) {
-            SamplingTmr.SetUpdateFrequency(dw32);
-            PShell->Ack(OK);
+#if 1 // ==== Common ====
+    else if(PCmd->NameIs("SetSmplFreq")) {
+        uint32_t NewFreq;
+        if(PCmd->GetNext<uint32_t>(&NewFreq) == retvOk) {
+            SamplingTmr.SetUpdateFrequencyChangingTopValue(NewFreq);
+            PShell->Ack(retvOk);
         }
-        else PShell->Ack(CMD_ERROR);
+        else PShell->Ack(retvCmdError);
     }
 
-    else if(PCmd->NameIs("#SetResolution")) {
-        if(PCmd->GetNextNumber(&dw32) == OK) {
-            if(dw32 >= 1 and dw32 <= 16) {
-                ResolutionMask = 0xFFFF << (16 - dw32);
-                PShell->Ack(OK);
-            }
-            else PShell->Ack(CMD_ERROR);
-        }
-        else PShell->Ack(CMD_ERROR);
-    }
-
-    // Output analog filter
-    else if(PCmd->NameIs("#OutFilterOn"))  { OutputFilterOn();  PShell->Ack(OK); }
-    else if(PCmd->NameIs("#OutFilterOff")) { OutputFilterOff(); PShell->Ack(OK); }
+//    else if(PCmd->NameIs("SetResolution")) {
+//        if(PCmd->GetNextNumber(&dw32) == OK) {
+//            if(dw32 >= 1 and dw32 <= 16) {
+//                ResolutionMask = 0xFFFF << (16 - dw32);
+//                PShell->Ack(OK);
+//            }
+//            else PShell->Ack(CMD_ERROR);
+//        }
+//        else PShell->Ack(CMD_ERROR);
+//    }
 
     // Stat/Stop
-    else if(PCmd->NameIs("#Start")) { PCurrentFilter->Start(); PShell->Ack(OK); }
-    else if(PCmd->NameIs("#Stop"))  { PCurrentFilter->Stop();  PShell->Ack(OK); }
+    else if(PCmd->NameIs("Start")) { PCurrentFilter->Start(); PShell->Ack(retvOk); }
+    else if(PCmd->NameIs("Stop"))  { PCurrentFilter->Stop();  PShell->Ack(retvOk); }
 #endif
 
 #if 0 // ==== Float FIR ====
@@ -225,23 +222,22 @@ void OnCmd(Shell_t *PShell) {
 }
 #endif
 
-#if 0 // ============================= IRQ =====================================
+#if 1 // ============================= IRQ =====================================
 // Sampling IRQ: output y0 and start new measurement. ADC will inform app when completed.
 
 #if 1 // ==== Sampling Timer =====
-extern "C" {
+extern "C"
 void SAMPLING_TMR_IRQHandler(void) {
     CH_IRQ_PROLOGUE();
     chSysLockFromISR();
     if(SAMPLING_TMR->SR & TIM_SR_UIF) {
     	SAMPLING_TMR->SR &= ~TIM_SR_UIF;
         Adc.StartDMAMeasure();
-        Dac.Set(DacOutput);
-        Led[1].SetHi();
+//        Dac.Set(DacOutput);
+//        Led[1].SetHi();
     }
     chSysUnlockFromISR();
     CH_IRQ_EPILOGUE();
-}
 }
 #endif
 

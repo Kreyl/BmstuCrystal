@@ -5,13 +5,12 @@
  *      Author: Kreyl
  */
 
-#ifndef USB_DESCRIPTORS_CDC_H_
-#define USB_DESCRIPTORS_CDC_H_
+#pragma once
 
-// Endpoints to be used for USBD2
-#define USBD2_DATA_IN_EP                1
-#define USBD2_DATA_OUT_EP               1
-#define USBD2_INTERRUPT_REQUEST_EP      2
+// Endpoints to be used for CDC
+#define EP_CDC_DATA_IN      1
+#define EP_CDC_DATA_OUT     1
+#define EP_CDC_INTERRUPT    2
 
 // Endpoint Sizes for Full-Speed devices
 #define EP0_SZ              64  // Control Endpoint must have a packet size of 64 bytes
@@ -25,5 +24,3 @@ const USBDescriptor *GetDescriptor(USBDriver *usbp, uint8_t dtype, uint8_t dinde
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* USB_DESCRIPTORS_CDC_H_ */

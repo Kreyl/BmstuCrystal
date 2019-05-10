@@ -119,6 +119,15 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.atollic.truestudio.exe.debug.2046682123.1622017045" name="main.cpp" rcbsApplicability="disable" resourcePath="main.cpp" toolsToInvoke="com.atollic.truestudio.exe.debug.toolchain.gpp.1278203976.1582019919">
+						<tool id="com.atollic.truestudio.exe.debug.toolchain.gpp.1278203976.1582019919" name="C++ Compiler" superClass="com.atollic.truestudio.exe.debug.toolchain.gpp.1278203976">
+							<option id="com.atollic.truestudio.gpp.symbols.defined.849910525" superClass="com.atollic.truestudio.gpp.symbols.defined" valueType="definedSymbols">
+								<listOptionValue builtIn="false" value="CORTEX_USE_FPU=TRUE"/>
+								<listOptionValue builtIn="false" value="&quot;BUILD_TIME=${current_date}&quot;"/>
+							</option>
+							<inputType id="com.atollic.truestudio.gpp.input.1975109845" superClass="com.atollic.truestudio.gpp.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
@@ -239,6 +248,15 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.atollic.truestudio.configuration.release.543367137.384336270" name="main.cpp" rcbsApplicability="disable" resourcePath="main.cpp" toolsToInvoke="com.atollic.truestudio.exe.release.toolchain.gpp.522652045.1872670058">
+						<tool id="com.atollic.truestudio.exe.release.toolchain.gpp.522652045.1872670058" name="C++ Compiler" superClass="com.atollic.truestudio.exe.release.toolchain.gpp.522652045">
+							<option id="com.atollic.truestudio.gpp.symbols.defined.495493186" superClass="com.atollic.truestudio.gpp.symbols.defined" valueType="definedSymbols">
+								<listOptionValue builtIn="false" value="CORTEX_USE_FPU=TRUE"/>
+								<listOptionValue builtIn="false" value="&quot;BUILD_TIME=${current_date}&quot;"/>
+							</option>
+							<inputType id="com.atollic.truestudio.gpp.input.2061611035" superClass="com.atollic.truestudio.gpp.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>

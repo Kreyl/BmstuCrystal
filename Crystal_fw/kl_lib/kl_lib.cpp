@@ -426,6 +426,7 @@ void Timer_t::SetUpdateFrequencyChangingTopValue(uint32_t FreqHz) const {
     uint32_t TopVal  = (Clk.GetTimInputFreq(ITmr) / FreqHz) - 1;
 //    Uart.Printf("Topval = %u\r", TopVal);
     SetTopValue(TopVal);
+    GenerateUpdateEvt();
 }
 #endif
 

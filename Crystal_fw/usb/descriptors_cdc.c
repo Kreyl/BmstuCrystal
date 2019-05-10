@@ -5,9 +5,6 @@
  *      Author: Kreyl
  */
 
-//#include <inttypes.h>
-//#include <stddef.h>
-//#include "usb.h"
 #include "ch.h"
 #include "hal.h"
 #include "descriptors_cdc.h"
@@ -91,7 +88,7 @@ static const uint8_t vcom_configuration_descriptor_data[67] = {
   USB_DESC_BYTE         (0x01),         // bSlaveInterface0 (Data Class Interface)
   /* Endpoint 2 Descriptor.*/
   USB_DESC_ENDPOINT     (
-          (USBD2_INTERRUPT_REQUEST_EP | EP_DIR_IN), // bEndpointAddress
+          (EP_CDC_INTERRUPT | EP_DIR_IN), // bEndpointAddress
           EP_TYPE_INTERRUPT,            // bmAttributes
           EP_INTERRUPT_SZ,              // wMaxPacketSize
           0xFF),                        // bInterval
@@ -105,13 +102,13 @@ static const uint8_t vcom_configuration_descriptor_data[67] = {
                          0x00),         /* iInterface.                      */
   /* Endpoint 3 Descriptor.*/
   USB_DESC_ENDPOINT     (
-          (USBD2_DATA_OUT_EP | EP_DIR_OUT), // bEndpointAddress
+          (EP_CDC_DATA_OUT | EP_DIR_OUT), // bEndpointAddress
           EP_TYPE_BULK,                 // bmAttributes (Bulk)
           EP_BULK_SZ,                   // wMaxPacketSize
           0x00),                        // bInterval
   /* Endpoint 1 Descriptor.*/
   USB_DESC_ENDPOINT     (
-          (USBD2_DATA_IN_EP | EP_DIR_IN), // bEndpointAddress
+          (EP_CDC_DATA_IN | EP_DIR_IN), // bEndpointAddress
           EP_TYPE_BULK,                 // bmAttributes (Bulk)
           EP_BULK_SZ,                   // wMaxPacketSize
           0x00)                         // bInterval
