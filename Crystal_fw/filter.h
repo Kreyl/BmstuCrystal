@@ -195,16 +195,20 @@ public:
         }
     }
 
-#define MY_TOP_VAL  2000000000
+#define MY_TOP_VAL  2147483646.0
 
     inline void CheckForOverflow() {
         if(y0 > MY_TOP_VAL) {
-            if(y0 == INFINITY) y0 = -MY_TOP_VAL;
-            else y0 = y0 - MY_TOP_VAL - MY_TOP_VAL;
+            do {
+                y0 -= MY_TOP_VAL;
+            } while(y0 > MY_TOP_VAL);
+            y0 -= MY_TOP_VAL;
         }
         else if(y0 < -MY_TOP_VAL) {
-            if(y0 == -INFINITY) y0 = MY_TOP_VAL;
-            else y0 = y0 + MY_TOP_VAL + MY_TOP_VAL;
+            do {
+                y0 += MY_TOP_VAL;
+            } while(y0 < -MY_TOP_VAL);
+            y0 += MY_TOP_VAL;
         }
     }
 
