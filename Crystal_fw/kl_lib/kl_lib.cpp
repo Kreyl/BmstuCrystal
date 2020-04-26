@@ -72,7 +72,7 @@ void PrintMemoryInfo() {
 
 #if 1 // ============================ kl_string ================================
 __always_inline
-inline int kl_tolower(char c) {
+ int kl_tolower(char c) {
     return (c >= 'A' and c <= 'Z')? (c + ('a' - 'A')) : c;
 }
 
@@ -1211,6 +1211,13 @@ uint8_t TryStrToFloat(char* S, float *POutput) {
     if(*S == '\0') return retvEmpty;
     char *p;
     *POutput = strtof(S, &p);
+    return (*p == '\0')? retvOk : retvNotANumber;
+}
+
+uint8_t TryStrToDouble(char* S, double *POutput) {
+    if(*S == '\0') return retvEmpty;
+    char *p;
+    *POutput = strtod(S, &p);
     return (*p == '\0')? retvOk : retvNotANumber;
 }
 }; // namespace

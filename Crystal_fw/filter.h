@@ -1,7 +1,7 @@
 /*
  * filter.h
  *
- *  Created on: 25 сент. 2014 г.
+ *  Created on: 25 пїЅпїЅпїЅпїЅ. 2014 пїЅ.
  *      Author: Kreyl
  */
 
@@ -18,8 +18,8 @@ public:
         Reset();
     }
     void Start() { Running = true; }
-    virtual void Reset();
-    virtual int32_t AddXAndCalculate(int32_t x0);
+    virtual void Reset() = 0;
+    virtual int32_t AddXAndCalculate(int32_t x0) = 0;
 };
 
 #define FIR_MAX_SZ  20
@@ -140,6 +140,12 @@ public:
         x[0] = x0;
         for(int i=Sz-1; i>=1; i--) {
             y0 += x[i] * a[i];
+            if(y0 == infinityf()) {
+                y0 = -infinityf() + 1;
+            }
+            else if(y0 == -infinityf()) {
+                y0 = infinityf() - 1;
+            }
             x[i] = x[i-1];
         }
         y0 += x[0] * a[0];
@@ -167,6 +173,7 @@ class IirFloat_t : public Filter_t {
 private:
     float x[IIR_MAX_SZ];
     float y[IIR_MAX_SZ];
+    float y0;
 public:
     // Settins
     int32_t SzA = 1, SzB = 0;
@@ -187,22 +194,43 @@ public:
             b[i] = 0;
         }
     }
+
+#define MY_TOP_VAL  2000000000
+
+    inline void CheckForOverflow() {
+        if(y0 > MY_TOP_VAL) {
+            if(y0 == INFINITY) y0 = -MY_TOP_VAL;
+            else y0 = y0 - MY_TOP_VAL - MY_TOP_VAL;
+        }
+        else if(y0 < -MY_TOP_VAL) {
+            if(y0 == -INFINITY) y0 = MY_TOP_VAL;
+            else y0 = y0 + MY_TOP_VAL + MY_TOP_VAL;
+        }
+    }
+
     int32_t AddXAndCalculate(int32_t x0) {
         if(!Running) return 0;
-        float y0=0;
+        y0=0;
         // None-recursive part
         x[0] = x0;
         for(int i=SzA-1; i>=1; i--) {
             y0 += x[i] * a[i];
             x[i] = x[i-1];
+            CheckForOverflow();
         }
+
         y0 += x[0] * a[0];
+        CheckForOverflow();
+
         // Recursive part
         for(int i=SzB-1; i>=1; i--) {
             y0 += y[i] * b[i];
             y[i] = y[i-1];
+            CheckForOverflow();
         }
         y0 += y[0] * b[0];
+        CheckForOverflow();
+
         y[0] = y0;
         return roundf(y0);
     }
